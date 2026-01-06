@@ -73,6 +73,7 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
     String kindName = OptionalUtils.ofBlank(kind).orElse(type.name().toLowerCase());
     String templateId = Optional.ofNullable(config.get(realm.getName().toLowerCase() + "-" + kindName + "-template"))
         .orElse(config.get(kindName + "-template"));
+    logger.info("Send SMS using template: " + templateId + " for realm: " + realm.getName() + ", kind: " + kindName);
 
     // Parameter settings for API request
     SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
