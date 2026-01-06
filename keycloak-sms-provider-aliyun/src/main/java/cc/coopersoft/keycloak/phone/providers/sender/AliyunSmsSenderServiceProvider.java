@@ -59,13 +59,13 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
     String kindName = OptionalUtils.ofBlank(kind).orElse(type.name().toLowerCase());
     String templateId = Optional.ofNullable(config.get(realm.getName().toLowerCase() + "-" + kindName + "-template"))
         .orElse(config.get(kindName + "-template"));
-    logger.info("Send SMS using template: " + templateId + " for realm: " + realm.getName() + ", kind: " + kindName + ", signName: " + config.get("signName"));
+    logger.info("Send SMS using template: " + templateId + " for realm: " + realm.getName() + ", kind: " + kindName + ", signName: " + config.get("signname"));
 
     try {
       // Parameter settings for API request
       SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
               .phoneNumbers(phoneNumber)
-              .signName(config.get("signName"))
+              .signName(config.get("signname"))
               .templateCode(templateId)
               .templateParam(String.format("{\"code\":\"%s\",\"expires\":\"%s\"}",code,expires / 60))
               // Request-level configuration rewrite, can set Http request parameters, etc.
