@@ -17,6 +17,7 @@ import org.keycloak.models.RealmModel;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class AliyunSmsSenderServiceProvider implements MessageSenderService {
@@ -72,14 +73,15 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
               .build();
 
       // Asynchronously get the return value of the API request
-      CompletableFuture<SendSmsResponse> response = client.sendSms(sendSmsRequest);
-      response.whenComplete((r, e) -> {
-        if (e != null) {
-          logger.error("Send SMS message failed!", e);
-        } else {
-          logger.info("Send SMS message response: " + r.getBody().getMessage());
-        }
-      });
+      SendSmsResponse response = client.sendSms(sendSmsRequest).get(10, TimeUnit.SECONDS);
+      String bizCode = response.getBody().getCode(); // 阿里云业务码，OK 才算成功
+      if (!"OK".equalsIgnoreCase(bizCode)) {
+        throw new RuntimeException("Aliyun SMS failed: code=" + bizCode
+                + ", message=" + response.getBody().getMessage()
+                + ", requestId=" + response.getBody().getRequestId());
+      }
+      logger.infof("Send SMS ok. requestId=%s bizId=%s",
+              response.getBody().getRequestId(), response.getBody().getBizId());
     }catch (Exception e){
       logger.error("Send SMS message failed!", e);
     }
