@@ -10,6 +10,7 @@ import com.aliyun.sdk.service.dysmsapi20170525.AsyncClient;
 import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsRequest;
 import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsResponse;
 import darabonba.core.client.ClientOverrideConfiguration;
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.models.RealmModel;
@@ -17,6 +18,7 @@ import org.keycloak.models.RealmModel;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 public class AliyunSmsSenderServiceProvider implements MessageSenderService {
 
   private static final Logger logger = Logger.getLogger(AliyunSmsSenderServiceProvider.class);
@@ -75,31 +77,32 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
         .orElse(config.get(kindName + "-template"));
     logger.info("Send SMS using template: " + templateId + " for realm: " + realm.getName() + ", kind: " + kindName);
 
-    // Parameter settings for API request
-    SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
-        .phoneNumbers(phoneNumber)
-        .signName(realm.getDisplayName().toLowerCase())
-        .templateCode(templateId)
-        .templateParam(String.format("{\"code\":\"%s\",\"expires\":\"%s\"}",code,expires / 60))
-        // Request-level configuration rewrite, can set Http request parameters, etc.
-        // .requestConfiguration(RequestConfiguration.create().setHttpHeaders(new HttpHeaders()))
-        .build();
+    try {
+      // Parameter settings for API request
+      SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
+              .phoneNumbers(phoneNumber)
+              .signName(realm.getDisplayName().toLowerCase())
+              .templateCode(templateId)
+              .templateParam(String.format("{\"code\":\"%s\",\"expires\":\"%s\"}",code,expires / 60))
+              // Request-level configuration rewrite, can set Http request parameters, etc.
+              // .requestConfiguration(RequestConfiguration.create().setHttpHeaders(new HttpHeaders()))
+              .build();
 
-    // Asynchronously get the return value of the API request
-    CompletableFuture<SendSmsResponse> response = client.sendSms(sendSmsRequest);
-    // Synchronously get the return value of the API request
-    //SendSmsResponse resp = response.get();
-    //System.out.println(new Gson().toJson(resp));
-    // Asynchronous processing of return values
-        /*response.thenAccept(resp -> {
-            System.out.println(new Gson().toJson(resp));
-        }).exceptionally(throwable -> { // Handling exceptions
-            System.out.println(throwable.getMessage());
-            return null;
-        });*/
+      // Asynchronously get the return value of the API request
+      CompletableFuture<SendSmsResponse> response = client.sendSms(sendSmsRequest);
+      response.whenComplete((r, e) -> {
+        if (e != null) {
+          logger.error("Send SMS message failed!", e);
+        } else {
+          logger.info("Send SMS message response: " + r.getBody().getMessage());
+        }
+      });
+    }catch (Exception e){
+      logger.error("Send SMS message failed!", e);
+    }finally {
+      client.close();
+    }
 
-    // Finally, close the client
-    client.close();
   }
 
   @Override
