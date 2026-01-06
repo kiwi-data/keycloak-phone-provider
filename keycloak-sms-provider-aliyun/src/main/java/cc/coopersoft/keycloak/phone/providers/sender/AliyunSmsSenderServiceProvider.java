@@ -65,7 +65,7 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
       // Parameter settings for API request
       SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
               .phoneNumbers(phoneNumber)
-              .signName(realm.getDisplayName().toLowerCase())
+              .signName(config.get("singName"))
               .templateCode(templateId)
               .templateParam(String.format("{\"code\":\"%s\",\"expires\":\"%s\"}",code,expires / 60))
               // Request-level configuration rewrite, can set Http request parameters, etc.
