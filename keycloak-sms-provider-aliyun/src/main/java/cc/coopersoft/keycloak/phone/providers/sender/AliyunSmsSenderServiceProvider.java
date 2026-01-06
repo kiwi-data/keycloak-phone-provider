@@ -30,23 +30,6 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
   public AliyunSmsSenderServiceProvider(Config.Scope config, RealmModel realm) {
     this.config = config;
     this.realm = realm;
-
-    // HttpClient Configuration
-        /*HttpClient httpClient = new ApacheAsyncHttpClientBuilder()
-                .connectionTimeout(Duration.ofSeconds(10)) // Set the connection timeout time, the default is 10 seconds
-                .responseTimeout(Duration.ofSeconds(10)) // Set the response timeout time, the default is 20 seconds
-                .maxConnections(128) // Set the connection pool size
-                .maxIdleTimeOut(Duration.ofSeconds(50)) // Set the connection pool timeout, the default is 30 seconds
-                // Configure the proxy
-                .proxy(new ProxyOptions(ProxyOptions.Type.HTTP, new InetSocketAddress("<your-proxy-hostname>", 9001))
-                        .setCredentials("<your-proxy-username>", "<your-proxy-password>"))
-                // If it is an https connection, you need to configure the certificate, or ignore the certificate(.ignoreSSL(true))
-                .x509TrustManagers(new X509TrustManager[]{})
-                .keyManagers(new KeyManager[]{})
-                .ignoreSSL(false)
-                .build();*/
-
-
     // Configure Credentials authentication information, including ak, secret, token
     StaticCredentialProvider provider = StaticCredentialProvider.create(Credential.builder()
         .accessKeyId(config.get("key"))
@@ -99,10 +82,7 @@ public class AliyunSmsSenderServiceProvider implements MessageSenderService {
       });
     }catch (Exception e){
       logger.error("Send SMS message failed!", e);
-    }finally {
-      client.close();
     }
-
   }
 
   @Override
