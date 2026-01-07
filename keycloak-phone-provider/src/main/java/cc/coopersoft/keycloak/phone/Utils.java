@@ -43,11 +43,11 @@ public class Utils {
         }
 
         return numbers.stream().flatMap(number -> userProvider
-                .searchForUserByUserAttributeStream(realm, "phoneNumber", number))
+                .searchForUserByUserAttributeStream(realm, "phone", number))
                 .max((u1, u2) -> {
                     var result = comparatorAttributesAnyMatch(u1, u2, "phoneNumberVerified", "true"::equals);
                     if (result == 0) {
-                        result = comparatorAttributesAnyMatch(u1, u2, "phoneNumber", number -> number.startsWith("+"));
+                        result = comparatorAttributesAnyMatch(u1, u2, "phone", number -> number.startsWith("+"));
                     }
                     return result;
                 });
