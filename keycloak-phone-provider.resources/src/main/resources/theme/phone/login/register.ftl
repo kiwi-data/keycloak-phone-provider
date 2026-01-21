@@ -1,350 +1,298 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('firstName','lastName','email','username','password','password-confirm','phoneNumber','registerCode'); section>
     <#if section = "header">
-        ${msg("registerTitle")}
+        Create your account
+    <#elseif section = "socialProviders">
+        <#if realm.password && social.providers??>
+            <div class="protocols-social-section">
+                <#list social.providers as p>
+                    <a id="social-${p.alias}" class="protocols-social-btn" href="${p.loginUrl}">
+                        <#if p.alias == "google">
+                            <img src="${url.resourcesPath}/img/google-icon.svg" alt="Google" />
+                        <#elseif p.iconClasses?has_content>
+                            <i class="${p.iconClasses!}" aria-hidden="true"></i>
+                        </#if>
+                        <span>Continue with ${p.displayName!}</span>
+                    </a>
+                </#list>
+            </div>
+            <div class="protocols-divider"><span>or</span></div>
+        </#if>
     <#elseif section = "form">
         <#if phoneNumberRequired??>
             <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
             <style>
-                [v-cloak] > * {
-                    display: none;
-                }
-                [v-cloak]::before {
-                    content: "loading...";
-                }
+                [v-cloak] > * { display: none; }
+                [v-cloak]::before { content: "loading..."; }
             </style>
         </#if>
+        
+        <p class="protocols-subtitle">Welcome to Protocols, create an account to get started.</p>
+
         <div id="vue-app">
-        <form id="kc-register-form" class="${properties.kcFormClass!}" action="${url.registrationAction}" method="post">
-            
-            <#-- Tab切换 - 只在同时支持手机号和邮箱注册时显示 -->
-            <#if phoneNumberRequired?? && !hideEmail??>
-            <div class="alert-error ${properties.kcAlertClass!} pf-m-danger" v-show="errorMessage">
-                <div class="pf-c-alert__icon">
-                    <span class="${properties.kcFeedbackErrorIcon!}"></span>
-                </div>
-                <span class="${properties.kcAlertTitleClass!}">{{ errorMessage }}</span>
-            </div>
-            
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <ul class="nav nav-pills nav-justified">
-                        <li role="presentation" v-bind:class="{ active: !phoneRegister }"
-                            v-on:click="phoneRegister = false">
-                            <a href="#">${msg("registerByEmail")}</a>
-                        </li>
-                        <li role="presentation" v-bind:class="{ active: phoneRegister }"
-                            v-on:click="phoneRegister = true">
-                            <a href="#">${msg("registerByPhone")}</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <input type="hidden" id="registerType" name="registerType" :value="phoneRegister ? 'phone' : 'email'">
-            <#else>
+            <#-- Vue Error Message -->
             <#if phoneNumberRequired??>
-            <div class="alert-error ${properties.kcAlertClass!} pf-m-danger" v-show="errorMessage">
-                <div class="pf-c-alert__icon">
-                    <span class="${properties.kcFeedbackErrorIcon!}"></span>
-                </div>
-                <span class="${properties.kcAlertTitleClass!}">{{ errorMessage }}</span>
+            <div class="protocols-alert protocols-alert-error" v-show="errorMessage" v-cloak>
+                {{ errorMessage }}
             </div>
             </#if>
-            </#if>
-
-            <#-- 邮箱注册区域 -->
+            
+            <#-- Tab Switch - Only show when both phone and email registration are supported -->
             <#if phoneNumberRequired?? && !hideEmail??>
-            <div v-if="!phoneRegister" v-cloak>
+            <div class="protocols-tabs" v-cloak>
+                <button type="button" class="protocols-tab" :class="{ active: !phoneRegister }" @click="phoneRegister = false">
+                    ${msg("registerByEmail")}
+                </button>
+                <button type="button" class="protocols-tab" :class="{ active: phoneRegister }" @click="phoneRegister = true">
+                    ${msg("registerByPhone")}
+                </button>
+            </div>
             </#if>
             
-            <#if !hideEmail??>
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="email" class="${properties.kcLabelClass!}">${msg("email")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="email" class="${properties.kcInputClass!}" name="email"
-                           value="${(register.formData.email!'')}" autocomplete="email"
-                           aria-invalid="<#if messagesPerField.existsError('email')>true</#if>"
-                    />
+            <form id="kc-register-form" action="${url.registrationAction}" method="post">
+                <#if phoneNumberRequired?? && !hideEmail??>
+                <input type="hidden" id="registerType" name="registerType" :value="phoneRegister ? 'phone' : 'email'">
+                </#if>
 
+                <#-- Email Registration Section -->
+                <#if phoneNumberRequired?? && !hideEmail??>
+                <div v-if="!phoneRegister" v-cloak>
+                </#if>
+                
+                <#if !hideEmail??>
+                <div class="protocols-form-group">
+                    <label for="email" class="protocols-label">${msg("email")}</label>
+                    <input type="email" id="email" class="protocols-input <#if messagesPerField.existsError('email')>has-error</#if>" 
+                           name="email" value="${(register.formData.email!'')}" 
+                           placeholder="Enter your email"
+                           autocomplete="email"
+                           aria-invalid="<#if messagesPerField.existsError('email')>true</#if>" />
                     <#if messagesPerField.existsError('email')>
-                        <span id="input-error-email" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                        <span class="protocols-error-msg">
                             ${kcSanitize(messagesPerField.get('email'))?no_esc}
                         </span>
                     </#if>
                 </div>
-            </div>
-            </#if>
+                </#if>
 
-            <#-- Username 字段（公共，始终显示） -->
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="username" class="${properties.kcInputClass!}" name="username"
-                           value="${(register.formData.username!'')}" autocomplete="username"
-                           aria-invalid="<#if messagesPerField.existsError('username')>true</#if>"
-                    />
-
+                <#-- Username Field (Common) -->
+                <div class="protocols-form-group">
+                    <label for="username" class="protocols-label">${msg("username")}</label>
+                    <input type="text" id="username" class="protocols-input <#if messagesPerField.existsError('username')>has-error</#if>" 
+                           name="username" value="${(register.formData.username!'')}" 
+                           placeholder="Choose a username"
+                           autocomplete="username"
+                           aria-invalid="<#if messagesPerField.existsError('username')>true</#if>" />
                     <#if messagesPerField.existsError('username')>
-                        <span id="input-error-username" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                        <span class="protocols-error-msg">
                             ${kcSanitize(messagesPerField.get('username'))?no_esc}
                         </span>
                     </#if>
                 </div>
-            </div>
 
-            <#if phoneNumberRequired?? && !hideEmail??>
-            </div>
-            </#if>
-            
-            <#-- 手机号注册区域 -->
-            <#if phoneNumberRequired??>
-            <#if !hideEmail??>
-            <div v-if="phoneRegister" v-cloak>
-            </#if>
-                <div class="${properties.kcFormGroupClass!} ${messagesPerField.printIfExists('phoneNumber',properties.kcFormGroupErrorClass!)}">
-                    <div class="${properties.kcLabelWrapperClass!}">
-                        <label for="phoneNumber" class="${properties.kcLabelClass!}">${msg("phoneNumber")}</label>
-                    </div>
-                    <div class="${properties.kcInputWrapperClass!}">
-                        <input tabindex="0" id="phoneNumber" class="${properties.kcInputClass!}"
-                               name="phoneNumber" type="tel"
-                               aria-invalid="<#if messagesPerField.existsError('phoneNumber')>true</#if>"
-                               autofocus
-                               value="${(register.formData.phoneNumber!'')}"
-                               autocomplete="mobile tel"/>
+                <#if phoneNumberRequired?? && !hideEmail??>
+                </div>
+                </#if>
+                
+                <#-- Phone Registration Section -->
+                <#if phoneNumberRequired??>
+                <#if !hideEmail??>
+                <div v-if="phoneRegister" v-cloak>
+                </#if>
+                    <div class="protocols-form-group">
+                        <label for="phoneNumber" class="protocols-label">${msg("phoneNumber")}</label>
+                        <div class="protocols-phone-group">
+                            <select class="protocols-country-select" name="countryCode" id="countryCode">
+                                <option value="+86">+86</option>
+                                <option value="+1">+1</option>
+                                <option value="+44">+44</option>
+                                <option value="+81">+81</option>
+                                <option value="+82">+82</option>
+                            </select>
+                            <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('phoneNumber')>has-error</#if>" 
+                                   name="phoneNumber" type="tel" 
+                                   value="${(register.formData.phoneNumber!'')}"
+                                   placeholder="Your phone number" />
+                        </div>
                         <#if messagesPerField.existsError('phoneNumber')>
-                            <span id="input-error-phonenumber" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                            <span class="protocols-error-msg">
                                 ${kcSanitize(messagesPerField.get('phoneNumber'))?no_esc}
                             </span>
                         </#if>
                     </div>
-                </div>
 
-                <#if verifyPhone??>
-                <div class="${properties.kcFormGroupClass!} row">
-                    <div class="${properties.kcLabelWrapperClass!}" style="padding: 0">
-                        <label for="registerCode" class="${properties.kcLabelClass!}">${msg("verificationCode")}</label>
-                    </div>
-                    <div class="col-xs-8" style="padding: 0 5px 0 0">
-                        <input tabindex="0" id="code" name="code"
-                               aria-invalid="<#if messagesPerField.existsError('registerCode')>true</#if>"
-                               type="text" class="${properties.kcInputClass!}"
-                               autocomplete="one-time-code"/>
+                    <#if verifyPhone??>
+                    <div class="protocols-form-group">
+                        <label for="code" class="protocols-label">${msg("verificationCode")}</label>
+                        <div class="protocols-code-group">
+                            <input tabindex="0" id="code" class="protocols-input protocols-code-input <#if messagesPerField.existsError('registerCode')>has-error</#if>" 
+                                   name="code" type="text" 
+                                   placeholder="Your passcode"
+                                   autocomplete="one-time-code" />
+                            <button type="button" class="protocols-send-btn"
+                                    v-bind:disabled="sendButtonText !== initSendButtonText"
+                                    v-on:click="sendVerificationCode()">
+                                {{ sendButtonText }}
+                            </button>
+                        </div>
                         <#if messagesPerField.existsError('registerCode')>
-                            <span id="input-error-code" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                            <span class="protocols-error-msg">
                                 ${kcSanitize(messagesPerField.get('registerCode'))?no_esc}
                             </span>
                         </#if>
                     </div>
-                    <div class="col-xs-4" style="padding: 0 0 0 5px">
-                        <input tabindex="0" style="height: 36px"
-                               class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                               v-model="sendButtonText" :disabled='sendButtonText !== initSendButtonText'
-                               v-on:click="sendVerificationCode()"
-                               type="button" value="${msg("sendVerificationCode")}"/>
+                    </#if>
+                    
+                    <#-- Username for phone registration -->
+                    <div class="protocols-form-group">
+                        <label for="username-phone" class="protocols-label">${msg("username")}</label>
+                        <input type="text" id="username-phone" class="protocols-input" 
+                               name="username" value="${(register.formData.username!'')}" 
+                               placeholder="Choose a username"
+                               autocomplete="username" />
                     </div>
+                <#if !hideEmail??>
                 </div>
                 </#if>
-                
-                <#-- Username 字段（手机号注册时也显示） -->
-                <div class="${properties.kcFormGroupClass!}">
-                    <div class="${properties.kcLabelWrapperClass!}">
-                        <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
-                    </div>
-                    <div class="${properties.kcInputWrapperClass!}">
-                        <input type="text" id="username" class="${properties.kcInputClass!}" name="username"
-                               value="${(register.formData.username!'')}" autocomplete="username"
-                               aria-invalid="<#if messagesPerField.existsError('username')>true</#if>"
-                        />
+                </#if>
 
-                        <#if messagesPerField.existsError('username')>
-                            <span id="input-error-username" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                                ${kcSanitize(messagesPerField.get('username'))?no_esc}
-                            </span>
-                        </#if>
-                    </div>
-                </div>
-            <#if !hideEmail??>
-            </div>
-            </#if>
-            </#if>
-
-            <#-- 姓名字段（公共） -->
-            <#-- 姓名字段（公共） -->
-            <#if !hideName??>
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="firstName" class="${properties.kcLabelClass!}">${msg("firstName")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="firstName" class="${properties.kcInputClass!}" name="firstName"
-                           value="${(register.formData.firstName!'')}"
-                           aria-invalid="<#if messagesPerField.existsError('firstName')>true</#if>"
-                    />
-
+                <#-- Name Fields (Common) -->
+                <#if !hideName??>
+                <div class="protocols-form-group">
+                    <label for="firstName" class="protocols-label">${msg("firstName")}</label>
+                    <input type="text" id="firstName" class="protocols-input <#if messagesPerField.existsError('firstName')>has-error</#if>" 
+                           name="firstName" value="${(register.formData.firstName!'')}" 
+                           placeholder="First name"
+                           aria-invalid="<#if messagesPerField.existsError('firstName')>true</#if>" />
                     <#if messagesPerField.existsError('firstName')>
-                        <span id="input-error-firstname" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                        <span class="protocols-error-msg">
                             ${kcSanitize(messagesPerField.get('firstName'))?no_esc}
                         </span>
                     </#if>
                 </div>
-            </div>
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="lastName" class="${properties.kcLabelClass!}">${msg("lastName")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="lastName" class="${properties.kcInputClass!}" name="lastName"
-                           value="${(register.formData.lastName!'')}"
-                           aria-invalid="<#if messagesPerField.existsError('lastName')>true</#if>"
-                    />
-
+                <div class="protocols-form-group">
+                    <label for="lastName" class="protocols-label">${msg("lastName")}</label>
+                    <input type="text" id="lastName" class="protocols-input <#if messagesPerField.existsError('lastName')>has-error</#if>" 
+                           name="lastName" value="${(register.formData.lastName!'')}" 
+                           placeholder="Last name"
+                           aria-invalid="<#if messagesPerField.existsError('lastName')>true</#if>" />
                     <#if messagesPerField.existsError('lastName')>
-                        <span id="input-error-lastname" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                        <span class="protocols-error-msg">
                             ${kcSanitize(messagesPerField.get('lastName'))?no_esc}
                         </span>
                     </#if>
                 </div>
-            </div>
-            </#if>
-            
-            <#-- 密码字段（公共） -->
-            <#-- 密码字段（公共） -->
-            <#if passwordRequired??>
-                <div class="${properties.kcFormGroupClass!}">
-                    <div class="${properties.kcLabelWrapperClass!}">
-                        <label for="password" class="${properties.kcLabelClass!}">${msg("password")}</label>
-                    </div>
-                    <div class="${properties.kcInputWrapperClass!}">
-                        <input type="password" id="password" class="${properties.kcInputClass!}" name="password"
-                               autocomplete="new-password"
-                               aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>"
-                        />
-
-                        <#if messagesPerField.existsError('password')>
-                            <span id="input-error-password" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                                ${kcSanitize(messagesPerField.get('password'))?no_esc}
-                            </span>
-                        </#if>
-                    </div>
+                </#if>
+                
+                <#-- Password Fields (Common) -->
+                <#if passwordRequired??>
+                <div class="protocols-form-group">
+                    <label for="password" class="protocols-label">${msg("password")}</label>
+                    <input type="password" id="password" class="protocols-input <#if messagesPerField.existsError('password')>has-error</#if>" 
+                           name="password" 
+                           placeholder="Create a password"
+                           autocomplete="new-password"
+                           aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>" />
+                    <#if messagesPerField.existsError('password')>
+                        <span class="protocols-error-msg">
+                            ${kcSanitize(messagesPerField.get('password'))?no_esc}
+                        </span>
+                    </#if>
                 </div>
 
-                <div class="${properties.kcFormGroupClass!}">
-                    <div class="${properties.kcLabelWrapperClass!}">
-                        <label for="password-confirm"
-                               class="${properties.kcLabelClass!}">${msg("passwordConfirm")}</label>
-                    </div>
-                    <div class="${properties.kcInputWrapperClass!}">
-                        <input type="password" id="password-confirm" class="${properties.kcInputClass!}"
-                               name="password-confirm"
-                               aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>"
-                        />
-
-                        <#if messagesPerField.existsError('password-confirm')>
-                            <span id="input-error-password-confirm" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                                ${kcSanitize(messagesPerField.get('password-confirm'))?no_esc}
-                            </span>
-                        </#if>
-                    </div>
+                <div class="protocols-form-group">
+                    <label for="password-confirm" class="protocols-label">${msg("passwordConfirm")}</label>
+                    <input type="password" id="password-confirm" class="protocols-input <#if messagesPerField.existsError('password-confirm')>has-error</#if>" 
+                           name="password-confirm"
+                           placeholder="Confirm your password"
+                           aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>" />
+                    <#if messagesPerField.existsError('password-confirm')>
+                        <span class="protocols-error-msg">
+                            ${kcSanitize(messagesPerField.get('password-confirm'))?no_esc}
+                        </span>
+                    </#if>
                 </div>
-            </#if>
+                </#if>
 
-            <#-- reCAPTCHA（公共） -->
-            <#-- reCAPTCHA（公共） -->
-            <#if recaptchaRequired??>
-                <div class="form-group">
-                    <div class="${properties.kcInputWrapperClass!}">
-                        <div class="g-recaptcha" data-size="compact" data-sitekey="${recaptchaSiteKey}"></div>
-                    </div>
+                <#-- reCAPTCHA -->
+                <#if recaptchaRequired??>
+                <div class="protocols-form-group">
+                    <div class="g-recaptcha" data-size="compact" data-sitekey="${recaptchaSiteKey}"></div>
                 </div>
-            </#if>
+                </#if>
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
-                    <div class="${properties.kcFormOptionsWrapperClass!}">
-                        <span><a href="${url.loginUrl}">${kcSanitize(msg("backToLogin"))?no_esc}</a></span>
-                    </div>
+                <button class="protocols-btn-primary" type="submit">
+                    ${msg("doRegister")}
+                </button>
+                
+                <div class="protocols-footer" style="margin-top: 16px;">
+                    <a href="${url.loginUrl}" class="protocols-link">${kcSanitize(msg("backToLogin"))?no_esc}</a>
                 </div>
-
-                <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
-                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg("doRegister")}"/>
-                </div>
-            </div>
-        </form>
+            </form>
         </div>
 
         <#-- JavaScript for phone registration -->
         <#if phoneNumberRequired??>
-            <script type="text/javascript">
-                function req(phoneNumber) {
-                    const params = {params: {phoneNumber}}
-                    axios.get(window.location.origin + '/realms/${realm.name}/sms/registration-code', params)
-                        .then(res => app.disableSend(res.data.expires_in))
-                        .catch(e => app.errorMessage = e.response.data.error);
-                }
+        <script type="text/javascript">
+            function req(phoneNumber) {
+                const params = {params: {phoneNumber}}
+                axios.get(window.location.origin + '/realms/${realm.name}/sms/registration-code', params)
+                    .then(res => app.disableSend(res.data.expires_in))
+                    .catch(e => app.errorMessage = e.response.data.error);
+            }
 
-                const app = new Vue({
-                    el: '#vue-app',
-                    data: {
-                        errorMessage: '',
-                        <#-- 根据之前提交的数据决定显示哪个Tab -->
-                        phoneRegister: <#if register.formData.phoneNumber?has_content>true<#else>false</#if>,
-                        sendButtonText: '${msg("sendVerificationCode")}',
-                        initSendButtonText: '${msg("sendVerificationCode")}',
-                        disableSend: function (seconds) {
-                            if (seconds <= 0) {
-                                app.sendButtonText = app.initSendButtonText;
-                            } else {
-                                const minutes = Math.floor(seconds / 60) + '';
-                                const seconds_ = seconds % 60 + '';
-                                app.sendButtonText = String(minutes.padStart(2, '0') + ":" + seconds_.padStart(2, '0'));
-                                setTimeout(function () {
-                                    app.disableSend(seconds - 1);
-                                }, 1000);
-                            }
-                        },
-                        sendVerificationCode: function () {
-                            this.errorMessage = '';
-                            const phoneNumber = document.getElementById('phoneNumber').value.trim();
-                            if (!phoneNumber) {
-                                this.errorMessage = '${msg("requiredPhoneNumber")}';
-                                document.getElementById('phoneNumber').focus();
-                                return;
-                            }
-                            if (this.sendButtonText !== this.initSendButtonText) return;
-                            req(phoneNumber);
+            const app = new Vue({
+                el: '#vue-app',
+                data: {
+                    errorMessage: '',
+                    phoneRegister: <#if register.formData.phoneNumber?has_content>true<#else>false</#if>,
+                    sendButtonText: '${msg("sendVerificationCode")}',
+                    initSendButtonText: '${msg("sendVerificationCode")}',
+                    disableSend: function (seconds) {
+                        if (seconds <= 0) {
+                            app.sendButtonText = app.initSendButtonText;
+                        } else {
+                            const minutes = Math.floor(seconds / 60) + '';
+                            const seconds_ = seconds % 60 + '';
+                            app.sendButtonText = String(minutes.padStart(2, '0') + ":" + seconds_.padStart(2, '0'));
+                            setTimeout(function () {
+                                app.disableSend(seconds - 1);
+                            }, 1000);
                         }
                     },
-                    watch: {
-                        phoneRegister: function(newVal, oldVal) {
-                            // 只在用户手动切换时清空输入框（不是页面加载时）
-                            if (oldVal !== undefined) {
-                                // 清空错误信息
-                                this.errorMessage = '';
-                                // 清空输入框
-                                if (newVal) {
-                                    // 切换到手机号注册
-                                    const emailField = document.getElementById('email');
-                                    if (emailField) emailField.value = '';
-                                } else {
-                                    // 切换到邮箱注册  
-                                    const phoneField = document.getElementById('phoneNumber');
-                                    if (phoneField) phoneField.value = '';
-                                    const codeField = document.getElementById('code');
-                                    if (codeField) codeField.value = '';
-                                }
+                    sendVerificationCode: function () {
+                        this.errorMessage = '';
+                        const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                        if (!phoneNumber) {
+                            this.errorMessage = '${msg("requiredPhoneNumber")}';
+                            document.getElementById('phoneNumber').focus();
+                            return;
+                        }
+                        if (this.sendButtonText !== this.initSendButtonText) return;
+                        const countryCode = document.getElementById('countryCode').value;
+                        req(countryCode + phoneNumber);
+                    }
+                },
+                watch: {
+                    phoneRegister: function(newVal, oldVal) {
+                        if (oldVal !== undefined) {
+                            this.errorMessage = '';
+                            if (newVal) {
+                                const emailField = document.getElementById('email');
+                                if (emailField) emailField.value = '';
+                            } else {
+                                const phoneField = document.getElementById('phoneNumber');
+                                if (phoneField) phoneField.value = '';
+                                const codeField = document.getElementById('code');
+                                if (codeField) codeField.value = '';
                             }
                         }
                     }
-                });
-            </script>
+                }
+            });
+        </script>
         </#if>
     </#if>
 </@layout.registrationLayout>

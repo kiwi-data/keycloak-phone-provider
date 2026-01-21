@@ -1,54 +1,44 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true; section>
     <#if section = "header">
-        ${msg("authCodePhoneNumber")}
+        Verify your identity
     <#elseif section = "form">
 
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <style>
+            [v-cloak] > * { display: none; }
+            [v-cloak]::before { content: "loading..."; }
+        </style>
+
+        <p class="protocols-subtitle">${msg("authCodeInfo")}</p>
 
         <div id="vue-app">
-            <div class="alert-error ${properties.kcAlertClass!} pf-m-danger" v-show="errorMessage">
-                <div class="pf-c-alert__icon">
-                    <span class="${properties.kcFeedbackErrorIcon!}"></span>
-                </div>
-
-                <span class="${properties.kcAlertTitleClass!}">{{ errorMessage }}</span>
-            </div>
-            <div id="kc-form">
-                <div id="kc-form-wrapper">
-                    <form id="kc-form-login" action="${url.loginAction}" method="post">
-
-
-                        <div class="${properties.kcFormGroupClass!} row">
-                            <div class="${properties.kcLabelWrapperClass!}" style="padding: 0">
-                                <label for="code"
-                                       class="${properties.kcLabelClass!}">${msg("authenticationCode")}</label>
-                            </div>
-                            <div class="col-xs-8" style="padding: 0 5px 0 0">
-                                <input tabindex="0" id="code" class="${properties.kcInputClass!}" name="code"
-                                       type="text" autofocus autocomplete="one-time-code"/>
-                            </div>
-                            <div class="col-xs-4" style="padding: 0 0 0 5px">
-                                <input tabindex="0" style="height: 36px"
-                                       class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                                       type="button" v-model="sendButtonText"
-                                       :disabled='sendButtonText !== initSendButtonText'
-                                       v-on:click="sendVerificationCode()"/>
-                            </div>
-                        </div>
-
-                        <div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">
-                            <input type="hidden" id="id-hidden-input" name="credentialId"
-                                   <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
-                            <input tabindex="0"
-                                   class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                                   name="save" id="kc-login" type="submit" value="${msg("doSubmit")}"/>
-                        </div>
-                    </form>
-                </div>
+            <div class="protocols-alert protocols-alert-error" v-show="errorMessage" v-cloak>
+                {{ errorMessage }}
             </div>
 
+            <form id="kc-form-login" action="${url.loginAction}" method="post">
+                <div class="protocols-form-group">
+                    <label for="code" class="protocols-label">${msg("authenticationCode")}</label>
+                    <div class="protocols-code-group">
+                        <input tabindex="0" id="code" class="protocols-input protocols-code-input" name="code"
+                               type="text" autofocus autocomplete="one-time-code"
+                               placeholder="Enter verification code" />
+                        <button type="button" class="protocols-send-btn"
+                                :disabled="sendButtonText !== initSendButtonText"
+                                @click="sendVerificationCode()">
+                            {{ sendButtonText }}
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" id="id-hidden-input" name="credentialId"
+                       <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
+                <button tabindex="0" class="protocols-btn-primary" name="save" id="kc-login" type="submit">
+                    ${msg("doSubmit")}
+                </button>
+            </form>
         </div>
 
         <script type="text/javascript" >

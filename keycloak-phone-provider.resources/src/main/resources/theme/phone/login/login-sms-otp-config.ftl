@@ -1,61 +1,64 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true; section>
     <#if section = "header">
-        ${msg("configSms2Fa")}
+        Configure SMS 2FA
     <#elseif section = "form">
 
       <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+      <style>
+          [v-cloak] > * { display: none; }
+          [v-cloak]::before { content: "loading..."; }
+      </style>
+
+      <p class="protocols-subtitle">${msg("configSms2FaInfo")}</p>
 
       <div id="vue-app">
-          <div class="alert-error ${properties.kcAlertClass!} pf-m-danger" v-show="errorMessage">
-              <div class="pf-c-alert__icon">
-                  <span class="${properties.kcFeedbackErrorIcon!}"></span>
-              </div>
-
-              <span class="${properties.kcAlertTitleClass!}">{{ errorMessage }}</span>
+          <div class="protocols-alert protocols-alert-error" v-show="errorMessage" v-cloak>
+              {{ errorMessage }}
           </div>
 
+          <form id="kc-form-login" action="${url.loginAction}" method="post">
+              <div class="protocols-form-group">
+                  <label for="phoneNumber" class="protocols-label">${msg("phoneNumber")}</label>
+                  <div class="protocols-phone-group">
+                      <select class="protocols-country-select" id="countryCode">
+                          <option value="+86">+86</option>
+                          <option value="+1">+1</option>
+                          <option value="+44">+44</option>
+                          <option value="+81">+81</option>
+                          <option value="+82">+82</option>
+                      </select>
+                      <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input"
+                             name="phoneNumber" type="tel" <#if !phoneNumber??>autofocus</#if>
+                             value="${phoneNumber!''}"
+                             placeholder="Your phone number"
+                             autocomplete="mobile tel"/>
+                  </div>
+              </div>
 
-        <div id="kc-form">
-          <div id="kc-form-wrapper">
-            <form id="kc-form-login" action="${url.loginAction}" method="post">
-              <div class="${properties.kcFormGroupClass!} row">
-                <div class="col-xs-12" style="padding: 0">
-                  <label for="phoneNumber"
-                         class="${properties.kcLabelClass!}">${msg("phoneNumber")}</label>
-                </div>
-                <div class="col-xs-8" style="padding: 0 5px 0 0">
-                  <input tabindex="0" id="phoneNumber" class="${properties.kcInputClass!}"
-                         name="phoneNumber" type="tel" <#if !phoneNumber??>autofocus</#if>
-                         value="${phoneNumber!''}"
-                         autocomplete="mobile tel"/>
-                </div>
-                <div class="col-xs-4" style="padding: 0 0 0 5px">
-                  <input tabindex="0" style="height: 36px"
-                         class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                         v-model="sendButtonText" :disabled='sendButtonText !== initSendButtonText'
-                         v-on:click="sendVerificationCode()"
-                         type="button" value="${msg("sendVerificationCode")}"/>
-                </div>
+              <div class="protocols-form-group">
+                  <label for="code" class="protocols-label">${msg("verificationCode")}</label>
+                  <div class="protocols-code-group">
+                      <input tabindex="0" id="code" class="protocols-input protocols-code-input" name="code"
+                             type="text" <#if phoneNumber??>autofocus</#if>
+                             placeholder="Your passcode"
+                             autocomplete="one-time-code"/>
+                      <button type="button" class="protocols-send-btn"
+                              :disabled="sendButtonText !== initSendButtonText"
+                              @click="sendVerificationCode()">
+                          {{ sendButtonText }}
+                      </button>
+                  </div>
               </div>
-              <div class="${properties.kcFormGroupClass!} row">
-                <label for="code" class="${properties.kcLabelClass!}">${msg("verificationCode")}</label>
-                <input tabindex="0" id="code" class="${properties.kcInputClass!}" name="code"
-                       type="text" <#if phoneNumber??>autofocus</#if>
-                       autocomplete="one-time-code"/>
-              </div>
-              <div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">
-                <input type="hidden" id="id-hidden-input" name="credentialId"
-                       <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
-                <input tabindex="0"
-                       class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                       :disabled='sendButtonText === initSendButtonText'
-                       name="save" id="kc-login" type="submit" value="${msg("doSubmit")}"/>
-              </div>
-            </form>
-          </div>
-        </div>
+
+              <input type="hidden" id="id-hidden-input" name="credentialId"
+                     <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
+              <button tabindex="0" class="protocols-btn-primary" name="save" id="kc-login" type="submit"
+                      :disabled="sendButtonText === initSendButtonText">
+                  ${msg("doSubmit")}
+              </button>
+          </form>
       </div>
 
       <script type="text/javascript">
