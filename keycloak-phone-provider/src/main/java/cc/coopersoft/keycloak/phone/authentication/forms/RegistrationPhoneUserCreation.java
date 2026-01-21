@@ -190,53 +190,115 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
     }
   }
 
+  private static final String REGISTER_TYPE_FIELD = "registerType";
+  private static final String REGISTER_TYPE_PHONE = "phone";
+
+  /**
+   * Check if the user selected phone registration mode.
+   * If registerType is not present, default to phone registration for backward compatibility.
+   */
+  private boolean isPhoneRegistration(MultivaluedMap<String, String> formData) {
+    String registerType = formData.getFirst(REGISTER_TYPE_FIELD);
+    // If registerType is not set, default to phone registration (backward compatibility)
+    return registerType == null || REGISTER_TYPE_PHONE.equals(registerType);
+  }
+
   @Override
   public void validate(ValidationContext context) {
+    logger.info("=== RegistrationPhoneUserCreation.validate() START ===");
 
     KeycloakSession session = context.getSession();
 
     MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
+    logger.info("Form data keys: " + formData.keySet());
     context.getEvent().detail(Details.REGISTER_METHOD, "form");
 
+    boolean isPhoneReg = isPhoneRegistration(formData);
     String phoneNumber = formData.getFirst(FIELD_PHONE_NUMBER);
+    logger.info("isPhoneRegistration: " + isPhoneReg + ", phoneNumber: " + phoneNumber);
 
-    boolean success = true;
     List<FormMessage> errors = new ArrayList<>();
-    if (Validation.isBlank(phoneNumber)) {
-      errors.add(new FormMessage(FIELD_PHONE_NUMBER, SupportPhonePages.Errors.MISSING.message()));
+    
+    // Get username from form - required for both registration modes
+    String username = formData.getFirst(UserModel.USERNAME);
+    logger.info("Username from form: " + username);
+    
+    // Validate username is provided
+    if (Validation.isBlank(username)) {
+      logger.warn("Username is blank, validation failed");
+      errors.add(new FormMessage(UserModel.USERNAME, Messages.MISSING_USERNAME));
       context.error(Errors.INVALID_REGISTRATION);
       context.validationError(formData, errors);
-      success = false;
-    } else {
+      return;
+    }
+    
+    // Only validate phone number if phone registration is selected
+    if (isPhoneReg) {
+      logger.info("Processing PHONE registration");
+      if (Validation.isBlank(phoneNumber)) {
+        logger.warn("Phone number is blank, validation failed");
+        errors.add(new FormMessage(FIELD_PHONE_NUMBER, SupportPhonePages.Errors.MISSING.message()));
+        context.error(Errors.INVALID_REGISTRATION);
+        context.validationError(formData, errors);
+        return;
+      }
+      
       try {
         phoneNumber = Utils.canonicalizePhoneNumber(session, phoneNumber);
+        logger.info("Canonicalized phone number: " + phoneNumber);
         if (!Utils.isDuplicatePhoneAllowed(session) &&
             Utils.findUserByPhone(session, context.getRealm(), phoneNumber).isPresent()) {
+          logger.warn("Phone number already exists: " + phoneNumber);
           context.error(Errors.INVALID_REGISTRATION);
           errors.add(new FormMessage(FIELD_PHONE_NUMBER, SupportPhonePages.Errors.EXISTS.message()));
           context.validationError(formData, errors);
-          success = false;
+          return;
         }
       } catch (PhoneNumberInvalidException e) {
-
+        logger.warn("Phone number invalid: " + e.getErrorType());
         context.error(Errors.INVALID_REGISTRATION);
         errors.add(new FormMessage(FIELD_PHONE_NUMBER, e.getErrorType().message()));
         context.validationError(formData, errors);
-        success = false;
+        return;
       }
+      
+      context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
+      // Use user-provided username (not phone number)
+      logger.info("Using user-provided username: " + username);
+      context.getEvent().detail(Details.USERNAME, username);
+      // For phone registration, clear email if it's empty to avoid validation errors
+      String email = formData.getFirst(UserModel.EMAIL);
+      if (Validation.isBlank(email)) {
+        logger.info("Email is blank for phone registration, removing from formData");
+        formData.remove(UserModel.EMAIL);
+      }
+    } else {
+      logger.info("Processing EMAIL registration");
+      // Email registration - validate email is provided
+      String email = formData.getFirst(UserModel.EMAIL);
+      logger.info("Email: " + email);
+      if (Validation.isBlank(email)) {
+        logger.warn("Email is blank for email registration, validation failed");
+        errors.add(new FormMessage(UserModel.EMAIL, Messages.MISSING_EMAIL));
+        context.error(Errors.INVALID_REGISTRATION);
+        context.validationError(formData, errors);
+        return;
+      }
+      // Use user-provided username (not email)
+      logger.info("Using user-provided username: " + username);
+      context.getEvent().detail(Details.USERNAME, username);
+      // Clear phone number field to avoid confusion
+      formData.remove(FIELD_PHONE_NUMBER);
     }
 
-    context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
-    if (isPhoneNumberAsUsername(context)) {
-      context.getEvent().detail(Details.USERNAME, phoneNumber);
-      formData.putSingle(UserModel.USERNAME, phoneNumber);
-    }
-
+    logger.info("Creating UserProfile with formData keys: " + formData.keySet());
     UserProfileProvider profileProvider = session.getProvider(UserProfileProvider.class);
     UserProfile profile = profileProvider.create(UserProfileContext.REGISTRATION, formData);
 
-    String username = profile.getAttributes().getFirst(UserModel.USERNAME);
-    context.getEvent().detail(Details.USERNAME, username);
+    // Get username from profile (should match what we validated)
+    String profileUsername = profile.getAttributes().getFirst(UserModel.USERNAME);
+    logger.info("UserProfile username: " + profileUsername);
+    context.getEvent().detail(Details.USERNAME, profileUsername);
 
     boolean hideName = isHideName(context);
     boolean hideEmail = isHideEmail(context);
@@ -257,8 +319,11 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
     }
 
     try {
+      logger.info("Validating UserProfile...");
       profile.validate();
+      logger.info("UserProfile validation PASSED");
     } catch (ValidationException pve) {
+      logger.warn("UserProfile validation FAILED: " + pve.getErrors());
       if (pve.hasError(Messages.EMAIL_EXISTS)) {
         context.error(Errors.EMAIL_IN_USE);
       } else if (pve.hasError(Messages.MISSING_EMAIL, Messages.MISSING_USERNAME, Messages.INVALID_EMAIL)) {
@@ -266,51 +331,55 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
       } else if (pve.hasError(Messages.USERNAME_EXISTS)) {
         context.error(Errors.USERNAME_IN_USE);
       }
-      success = false;
       errors.addAll(Validation.getFormErrorsFromValidation(pve.getErrors()));
+      context.validationError(formData, errors);
+      return;
     }
 
-    if (success) {
-      context.success();
-    }
-    context.validationError(formData, errors);
+    logger.info("=== RegistrationPhoneUserCreation.validate() SUCCESS ===");
+    context.success();
   }
 
   @Override
   public void success(FormContext context) {
+    logger.info("=== RegistrationPhoneUserCreation.success() START ===");
 
     MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
 
+    boolean isPhoneReg = isPhoneRegistration(formData);
     String phoneNumber = formData.getFirst(FIELD_PHONE_NUMBER);
     String email = formData.getFirst(UserModel.EMAIL);
     String username = formData.getFirst(UserModel.USERNAME);
+    logger.info("isPhoneReg: " + isPhoneReg + ", phoneNumber: " + phoneNumber + ", email: " + email + ", username: " + username);
 
     var session = context.getSession();
-    try {
-      phoneNumber = Utils.canonicalizePhoneNumber(session, phoneNumber);
-    } catch (PhoneNumberInvalidException e) {
-      // verified in validate process
-      throw new IllegalStateException();
+    
+    // Process phone number for phone registration
+    if (isPhoneReg && phoneNumber != null && !phoneNumber.isBlank()) {
+      try {
+        phoneNumber = Utils.canonicalizePhoneNumber(session, phoneNumber);
+      } catch (PhoneNumberInvalidException e) {
+        // verified in validate process
+        throw new IllegalStateException();
+      }
+      context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
     }
-
-    if (context.getRealm().isRegistrationEmailAsUsername()) {
-      username = email;
-    } else if (isPhoneNumberAsUsername(context)) {
-      username = phoneNumber;
-      formData.add(UserModel.USERNAME, phoneNumber);
-    }
+    
+    // Username is user-provided, not derived from phone/email
+    logger.info("Using user-provided username: " + username);
 
     context.getEvent().detail(Details.USERNAME, username)
-        .detail(Details.REGISTER_METHOD, "form")
-        .detail(FIELD_PHONE_NUMBER, phoneNumber);
+        .detail(Details.REGISTER_METHOD, "form");
 
-    if (!isHideEmail(context)) {
+    if (!isHideEmail(context) && email != null) {
       context.getEvent().detail(Details.EMAIL, email);
     }
 
+    logger.info("Creating user with UserProfile...");
     UserProfileProvider profileProvider = session.getProvider(UserProfileProvider.class);
     UserProfile profile = profileProvider.create(UserProfileContext.REGISTRATION, formData);
     UserModel user = profile.create();
+    logger.info("User created: id=" + user.getId() + ", username=" + user.getUsername());
 
     // UserModel user = context.getSession().users().addUser(context.getRealm(),
     // username);

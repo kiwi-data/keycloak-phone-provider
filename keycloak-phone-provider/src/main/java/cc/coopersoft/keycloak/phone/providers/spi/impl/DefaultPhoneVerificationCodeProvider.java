@@ -29,6 +29,7 @@ import jakarta.ws.rs.ForbiddenException;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -57,13 +58,27 @@ public class DefaultPhoneVerificationCodeProvider implements PhoneVerificationCo
 
         try {
             String resultPhoneNumber = Utils.canonicalizePhoneNumber(session, phoneNumber);
-            TokenCode entity = getEntityManager()
+            List<TokenCode> results = getEntityManager()
                     .createNamedQuery("ongoingProcess", TokenCode.class)
                     .setParameter("realmId", getRealm().getId())
                     .setParameter("phoneNumber", resultPhoneNumber)
                     .setParameter("now", new Date(), TemporalType.TIMESTAMP)
                     .setParameter("type", tokenCodeType.name())
-                    .getSingleResult();
+                    .getResultList();
+
+            if (results.isEmpty()) {
+                return null;
+            }
+            
+            // Get the latest token code (sorted by createdAt descending)
+            TokenCode entity = results.stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .findFirst()
+                    .orElse(null);
+            
+            if (entity == null) {
+                return null;
+            }
 
             TokenCodeRepresentation tokenCodeRepresentation = new TokenCodeRepresentation();
 
@@ -76,8 +91,6 @@ public class DefaultPhoneVerificationCodeProvider implements PhoneVerificationCo
             tokenCodeRepresentation.setConfirmed(entity.getConfirmed());
 
             return tokenCodeRepresentation;
-        } catch (NoResultException e) {
-            return null;
         } catch (PhoneNumberInvalidException e) {
             logger.warn("Invalid number: " + phoneNumber);
             throw new BadRequestException("Phone number is invalid");

@@ -118,22 +118,47 @@ public class RegistrationPhoneVerificationCode implements FormAction, FormAction
 
   // FormAction
 
+  private static final String REGISTER_TYPE_FIELD = "registerType";
+  private static final String REGISTER_TYPE_PHONE = "phone";
+
   private PhoneVerificationCodeProvider getTokenCodeService(KeycloakSession session) {
     return session.getProvider(PhoneVerificationCodeProvider.class);
   }
 
+  /**
+   * Check if the user selected phone registration mode.
+   * If registerType is not present, default to phone registration for backward compatibility.
+   */
+  private boolean isPhoneRegistration(MultivaluedMap<String, String> formData) {
+    String registerType = formData.getFirst(REGISTER_TYPE_FIELD);
+    // If registerType is not set, default to phone registration (backward compatibility)
+    return registerType == null || REGISTER_TYPE_PHONE.equals(registerType);
+  }
+
   @Override
   public void validate(ValidationContext context) {
+    logger.info("=== RegistrationPhoneVerificationCode.validate() START ===");
 
     MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
     List<FormMessage> errors = new ArrayList<>();
     context.getEvent().detail(Details.REGISTER_METHOD, "form");
 
+    // If user selected email registration, skip phone validation
+    if (!isPhoneRegistration(formData)) {
+      logger.info("Email registration selected, skipping phone validation");
+      logger.info("=== RegistrationPhoneVerificationCode.validate() SUCCESS (email mode) ===");
+      context.success();
+      return;
+    }
+
+    logger.info("Phone registration selected, validating verification code");
     KeycloakSession session = context.getSession();
 
     String phoneNumber = formData.getFirst(FIELD_PHONE_NUMBER);
+    logger.info("Phone number from form: " + phoneNumber);
 
     if (Validation.isBlank(phoneNumber)) {
+      logger.warn("Phone number is blank");
       context.error(Errors.INVALID_REGISTRATION);
       errors.add(new FormMessage(FIELD_PHONE_NUMBER, SupportPhonePages.Errors.MISSING));
       context.validationError(formData, errors);
@@ -142,7 +167,9 @@ public class RegistrationPhoneVerificationCode implements FormAction, FormAction
 
     try {
       phoneNumber = Utils.canonicalizePhoneNumber(context.getSession(), phoneNumber);
+      logger.info("Canonicalized phone number: " + phoneNumber);
     } catch (PhoneNumberInvalidException e) {
+      logger.warn("Phone number invalid: " + e.getErrorType());
       context.error(Errors.INVALID_REGISTRATION);
       errors.add(new FormMessage(FIELD_PHONE_NUMBER, e.getErrorType().message()));
       context.validationError(formData, errors);
@@ -152,9 +179,12 @@ public class RegistrationPhoneVerificationCode implements FormAction, FormAction
     context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
 
     String verificationCode = formData.getFirst(FIELD_VERIFICATION_CODE);
+    logger.info("Verification code from form: " + verificationCode);
     TokenCodeRepresentation tokenCode = getTokenCodeService(session).ongoingProcess(phoneNumber,
         TokenCodeType.REGISTRATION);
+    logger.info("Token code from DB: " + (tokenCode != null ? tokenCode.getCode() : "null"));
     if (Validation.isBlank(verificationCode) || tokenCode == null || !tokenCode.getCode().equals(verificationCode)) {
+      logger.warn("Verification code validation FAILED");
       context.error(Errors.INVALID_REGISTRATION);
       formData.remove(FIELD_VERIFICATION_CODE);
       errors.add(new FormMessage(FIELD_VERIFICATION_CODE, SupportPhonePages.Errors.NOT_MATCH.message()));
@@ -163,16 +193,24 @@ public class RegistrationPhoneVerificationCode implements FormAction, FormAction
     }
 
     context.getSession().setAttribute("tokenId", tokenCode.getId());
+    logger.info("=== RegistrationPhoneVerificationCode.validate() SUCCESS ===");
     context.success();
   }
 
   @Override
   public void success(FormContext context) {
+    logger.info("=== RegistrationPhoneVerificationCode.success() START ===");
+
+    MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
+    
+    // If user selected email registration, skip phone success handling
+    if (!isPhoneRegistration(formData)) {
+      logger.info("Email registration selected, skipping phone success handling");
+      return;
+    }
 
     UserModel user = context.getUser();
     var session = context.getSession();
-
-    MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
 
     String phoneNumber = formData.getFirst(FIELD_PHONE_NUMBER);
 
