@@ -151,6 +151,25 @@
                     </div>
                 </div>
                 </#if>
+                
+                <#-- Username 字段（手机号注册时也显示） -->
+                <div class="${properties.kcFormGroupClass!}">
+                    <div class="${properties.kcLabelWrapperClass!}">
+                        <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
+                    </div>
+                    <div class="${properties.kcInputWrapperClass!}">
+                        <input type="text" id="username" class="${properties.kcInputClass!}" name="username"
+                               value="${(register.formData.username!'')}" autocomplete="username"
+                               aria-invalid="<#if messagesPerField.existsError('username')>true</#if>"
+                        />
+
+                        <#if messagesPerField.existsError('username')>
+                            <span id="input-error-username" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                                ${kcSanitize(messagesPerField.get('username'))?no_esc}
+                            </span>
+                        </#if>
+                    </div>
+                </div>
             <#if !hideEmail??>
             </div>
             </#if>
