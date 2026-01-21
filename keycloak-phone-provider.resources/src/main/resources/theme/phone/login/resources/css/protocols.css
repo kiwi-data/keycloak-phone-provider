@@ -38,10 +38,8 @@ body {
 }
 
 .protocols-logo {
-    width: 40px;
-    height: 40px;
-    background: var(--protocols-primary-light);
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
 }
 
 .protocols-brand {
@@ -88,8 +86,6 @@ body {
 .protocols-title-icon {
     width: 32px;
     height: 32px;
-    background: var(--protocols-primary-light);
-    border-radius: 6px;
 }
 
 .protocols-subtitle {

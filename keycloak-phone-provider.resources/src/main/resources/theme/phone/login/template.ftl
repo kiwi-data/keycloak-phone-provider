@@ -45,7 +45,7 @@
     <div class="protocols-container">
         <!-- Header with Logo -->
         <div class="protocols-header">
-            <div class="protocols-logo"></div>
+            <img src="${url.resourcesPath}/img/favicon.svg" alt="Protocols" class="protocols-logo" />
             <span class="protocols-brand">Protocols</span>
         </div>
         
@@ -55,7 +55,7 @@
                 <!-- Title Section -->
                 <div class="protocols-title-section">
                     <h1 class="protocols-title"><#nested "header"></h1>
-                    <div class="protocols-title-icon"></div>
+                    <img src="${url.resourcesPath}/img/favicon.svg" alt="" class="protocols-title-icon" />
                 </div>
                 
                 <#if realm.internationalizationEnabled  && locale.supported?size gt 1>
@@ -87,12 +87,6 @@
                         <#nested "info">
                     </div>
                 </#if>
-                
-                <!-- Terms and Privacy -->
-                <div class="protocols-terms">
-                    By continuing, you are agreeing to<br>
-                    Protocols' <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-                </div>
             </div>
         </div>
     </div>
