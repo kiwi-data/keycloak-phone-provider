@@ -95,13 +95,14 @@
                 <div v-if="phoneRegister" v-cloak>
                 </#if>
                     <div class="protocols-form-group">
-                        <label for="phoneNumber" class="protocols-label">${msg("phoneNumber")} <span class="required-mark">*</span></label>
+                        <label for="phoneNumberInput" class="protocols-label">${msg("phoneNumber")} <span class="required-mark">*</span></label>
                         <div class="protocols-phone-group">
                             <select class="protocols-country-select" name="countryCode" id="countryCode" required>
                                 <option value="+86">+86</option>
                             </select>
-                            <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('phoneNumber')>has-error</#if>" 
-                                   name="phoneNumber" type="tel" 
+                            <input type="hidden" id="phoneNumber" name="phoneNumber" value="" />
+                            <input tabindex="0" id="phoneNumberInput" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('phoneNumber')>has-error</#if>" 
+                                   type="tel" 
                                    value="${(register.formData.phoneNumber!'')}"
                                    placeholder="Your phone number"
                                    required />
@@ -249,14 +250,15 @@
                     },
                     sendVerificationCode: function () {
                         this.errorMessage = '';
-                        const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                        let phoneNumber = document.getElementById('phoneNumberInput').value.trim();
                         if (!phoneNumber) {
                             this.errorMessage = '${msg("requiredPhoneNumber")}';
-                            document.getElementById('phoneNumber').focus();
+                            document.getElementById('phoneNumberInput').focus();
                             return;
                         }
                         if (this.sendButtonText !== this.initSendButtonText) return;
                         const countryCode = document.getElementById('countryCode').value;
+                        // 直接拼接国家代码和用户输入的手机号
                         req(countryCode + phoneNumber);
                     }
                 },
@@ -268,7 +270,7 @@
                                 const emailField = document.getElementById('email');
                                 if (emailField) emailField.value = '';
                             } else {
-                                const phoneField = document.getElementById('phoneNumber');
+                                const phoneField = document.getElementById('phoneNumberInput');
                                 if (phoneField) phoneField.value = '';
                                 const codeField = document.getElementById('code');
                                 if (codeField) codeField.value = '';
@@ -282,12 +284,15 @@
                     if (form) {
                         form.addEventListener('submit', function(e) {
                             const usernameField = document.getElementById('username');
+                            const phoneNumberHidden = document.getElementById('phoneNumber');
                             if (app.phoneRegister) {
                                 // Phone registration: use phone number as username
                                 const countryCode = document.getElementById('countryCode').value;
-                                const phoneNumber = document.getElementById('phoneNumber').value.trim();
-                                const fullPhoneNumber = phoneNumber.startsWith('+') ? phoneNumber : countryCode + phoneNumber;
-                                document.getElementById('phoneNumber').value = fullPhoneNumber;
+                                const phoneNumber = document.getElementById('phoneNumberInput').value.trim();
+                                // 直接拼接国家代码和用户输入的手机号
+                                const fullPhoneNumber = countryCode + phoneNumber;
+                                // 只设置隐藏字段，不修改用户可见的输入框
+                                phoneNumberHidden.value = fullPhoneNumber;
                                 usernameField.value = fullPhoneNumber;
                             } else {
                                 // Email registration: use email as username
