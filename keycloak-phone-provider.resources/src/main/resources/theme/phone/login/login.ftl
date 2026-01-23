@@ -87,14 +87,6 @@
                             <div class="protocols-phone-group">
                                 <select class="protocols-country-select" id="pwdCountryCode">
                                     <option value="+86">+86</option>
-                                    <option value="+1">+1</option>
-                                    <option value="+44">+44</option>
-                                    <option value="+81">+81</option>
-                                    <option value="+82">+82</option>
-                                    <option value="+65">+65</option>
-                                    <option value="+852">+852</option>
-                                    <option value="+853">+853</option>
-                                    <option value="+886">+886</option>
                                 </select>
                                 <input tabindex="0" id="phoneNumberInput" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('username','password')>has-error</#if>" 
                                        type="tel" autocomplete="off"
