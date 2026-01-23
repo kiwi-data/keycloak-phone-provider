@@ -450,3 +450,156 @@ body {
 .login-pf-page .login-pf-accounts-content {
     padding: 0;
 }
+
+/* Policy Modal Styles */
+.policy-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.policy-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.policy-modal {
+    background: var(--protocols-bg);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.policy-modal-overlay.active .policy-modal {
+    transform: translateY(0);
+}
+
+.policy-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--protocols-border);
+}
+
+.policy-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--protocols-text);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.policy-date {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--protocols-text-secondary);
+}
+
+.policy-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--protocols-text-secondary);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.policy-modal-close:hover {
+    color: var(--protocols-text);
+}
+
+.policy-modal-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.policy-heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--protocols-text);
+    margin: 20px 0 8px;
+}
+
+.policy-heading:first-child {
+    margin-top: 0;
+}
+
+.policy-text {
+    font-size: 15px;
+    color: var(--protocols-text);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.policy-list {
+    list-style: disc;
+    padding-left: 24px;
+    margin-bottom: 12px;
+}
+
+.policy-list li {
+    font-size: 15px;
+    color: var(--protocols-text);
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.policy-link {
+    color: var(--protocols-primary);
+    text-decoration: underline;
+}
+
+.policy-link:hover {
+    text-decoration: none;
+}
+
+@media (max-width: 480px) {
+    .policy-modal {
+        width: 95%;
+        max-height: 90vh;
+        border-radius: 12px;
+    }
+    
+    .policy-modal-header {
+        padding: 16px;
+    }
+    
+    .policy-modal-title {
+        font-size: 20px;
+    }
+    
+    .policy-modal-content {
+        padding: 16px;
+    }
+    
+    .policy-heading {
+        font-size: 16px;
+    }
+    
+    .policy-text,
+    .policy-list li {
+        font-size: 14px;
+    }
+}
