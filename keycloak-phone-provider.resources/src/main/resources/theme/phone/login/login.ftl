@@ -19,27 +19,24 @@
             <div class="protocols-divider"><span>or</span></div>
         </#if>
     <#elseif section = "form">
-        <#if phoneLoginEnabled?? && phoneLoginEnabled>
-            <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-            <style>
-                [v-cloak] > * { display: none; }
-                [v-cloak]::before { content: "loading..."; }
-            </style>
-        </#if>
+        <#-- Always load Vue.js for tab switching -->
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <style>
+            [v-cloak] > * { display: none; }
+            [v-cloak]::before { content: "loading..."; }
+        </style>
 
         <p class="protocols-subtitle">Welcome to Protocols, please log in to continue.</p>
 
         <div id="vue-app">
             <#if realm.password>
-                <#-- Error Message for Vue -->
-                <#if phoneLoginEnabled?? && phoneLoginEnabled>
+                <#-- Error Message -->
                 <div class="protocols-alert protocols-alert-error" v-show="errorMessage" v-cloak>
                     {{ errorMessage }}
                 </div>
-                </#if>
                 
-                <#-- Tab Switch for Phone/Password Login -->
+                <#-- Tab Switch for Phone OTP / Password Login (only when phoneLoginEnabled) -->
                 <#if phoneLoginEnabled?? && phoneLoginEnabled>
                 <div class="protocols-tabs" v-cloak>
                     <button type="button" class="protocols-tab" :class="{ active: !phoneLogin }" @click="phoneLogin = false">
@@ -52,17 +49,28 @@
                 </#if>
 
                 <#-- Password Login Form -->
-                <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post" 
+                <form id="kc-form-login" onsubmit="return handlePasswordLoginSubmit()" action="${url.loginAction}" method="post" 
                       <#if phoneLoginEnabled?? && phoneLoginEnabled>v-show="!phoneLogin" v-cloak</#if>>
 
                     <#if !usernameHidden??>
-                        <div class="protocols-form-group">
-                            <label for="username" class="protocols-label">
-                                ${msg("emailOrPhoneNumber")}
+                        <#-- Sub-Tab Switch: Phone / Email for password login -->
+                        <div class="protocols-tabs" v-cloak>
+                            <button type="button" class="protocols-tab" :class="{ active: usePhone }" @click="setUsePhone(true)">
+                                ${msg("loginByPhoneNumber")}
+                            </button>
+                            <button type="button" class="protocols-tab" :class="{ active: !usePhone }" @click="setUsePhone(false)">
+                                ${msg("loginByEmailAddress")}
+                            </button>
+                        </div>
+
+                        <#-- Email/Username Mode -->
+                        <div class="protocols-form-group" v-show="!usePhone" v-cloak>
+                            <label for="emailInput" class="protocols-label">
+                                ${msg("email")}
                             </label>
-                            <input tabindex="0" id="username" class="protocols-input <#if messagesPerField.existsError('username','password')>has-error</#if>" 
-                                   name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="off"
-                                   placeholder="${msg("emailOrPhoneNumber")}"
+                            <input tabindex="0" id="emailInput" class="protocols-input <#if messagesPerField.existsError('username','password')>has-error</#if>" 
+                                   type="text" autofocus autocomplete="off"
+                                   placeholder="${msg("email")}"
                                    aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>" />
                             <#if messagesPerField.existsError('username','password')>
                                 <span class="protocols-error-msg">
@@ -70,6 +78,38 @@
                                 </span>
                             </#if>
                         </div>
+
+                        <#-- Phone Number Mode -->
+                        <div class="protocols-form-group" v-show="usePhone" v-cloak>
+                            <label for="phoneNumberInput" class="protocols-label">
+                                ${msg("phoneNumber")}
+                            </label>
+                            <div class="protocols-phone-group">
+                                <select class="protocols-country-select" id="pwdCountryCode">
+                                    <option value="+86">+86</option>
+                                    <option value="+1">+1</option>
+                                    <option value="+44">+44</option>
+                                    <option value="+81">+81</option>
+                                    <option value="+82">+82</option>
+                                    <option value="+65">+65</option>
+                                    <option value="+852">+852</option>
+                                    <option value="+853">+853</option>
+                                    <option value="+886">+886</option>
+                                </select>
+                                <input tabindex="0" id="phoneNumberInput" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('username','password')>has-error</#if>" 
+                                       type="tel" autocomplete="off"
+                                       placeholder="${msg("phoneNumber")}"
+                                       aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>" />
+                            </div>
+                            <#if messagesPerField.existsError('username','password')>
+                                <span class="protocols-error-msg">
+                                    ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
+                                </span>
+                            </#if>
+                        </div>
+
+                        <#-- Hidden username field for form submission -->
+                        <input type="hidden" id="username" name="username" value="${(login.username!'')}" />
                     </#if>
 
                     <div class="protocols-form-group">
@@ -145,14 +185,35 @@
             </#if>
         </div>
 
-        <#-- Vue.js Script for Phone Login -->
-        <#if phoneLoginEnabled?? && phoneLoginEnabled>
+        <#-- Vue.js Script -->
         <script type="text/javascript">
+            <#if phoneLoginEnabled?? && phoneLoginEnabled>
             function reqLoginCode(phoneNumber) {
                 const params = { params: { phoneNumber: phoneNumber } };
                 axios.get(window.location.origin + '/realms/${realm.name}/sms/authentication-code', params)
                     .then(res => app.disableSend(res.data.expires_in))
                     .catch(e => app.errorMessage = e.response.data.error);
+            }
+            </#if>
+
+            // Handle password login form submission
+            function handlePasswordLoginSubmit() {
+                const loginBtn = document.getElementById('kc-login');
+                if (loginBtn) loginBtn.disabled = true;
+                
+                // If using phone mode, combine country code and phone number
+                if (app && app.usePhone) {
+                    const countryCode = document.getElementById('pwdCountryCode').value;
+                    const phoneNumber = document.getElementById('phoneNumberInput').value.trim();
+                    document.getElementById('username').value = countryCode + phoneNumber;
+                } else {
+                    // Using email mode, copy email input to username
+                    const emailInput = document.getElementById('emailInput');
+                    if (emailInput) {
+                        document.getElementById('username').value = emailInput.value.trim();
+                    }
+                }
+                return true;
             }
 
             const app = new Vue({
@@ -160,18 +221,26 @@
                 data: {
                     errorMessage: '',
                     phoneLogin: false,
+                    usePhone: localStorage.getItem('login_use_phone') === 'true',
                     phoneNumber: '',
                     sendButtonText: '${msg("sendVerificationCode")}',
                     initSendButtonText: '${msg("sendVerificationCode")}',
+                },
+                methods: {
+                    setUsePhone: function(value) {
+                        this.usePhone = value;
+                        localStorage.setItem('login_use_phone', value);
+                    },
+                    <#if phoneLoginEnabled?? && phoneLoginEnabled>
                     disableSend: function(seconds) {
                         if (seconds <= 0) {
-                            app.sendButtonText = app.initSendButtonText;
+                            this.sendButtonText = this.initSendButtonText;
                         } else {
                             const minutes = Math.floor(seconds / 60) + '';
                             const seconds_ = seconds % 60 + '';
-                            app.sendButtonText = String(minutes.padStart(2, '0') + ":" + seconds_.padStart(2, '0'));
-                            setTimeout(function() {
-                                app.disableSend(seconds - 1);
+                            this.sendButtonText = String(minutes.padStart(2, '0') + ":" + seconds_.padStart(2, '0'));
+                            setTimeout(() => {
+                                this.disableSend(seconds - 1);
                             }, 1000);
                         }
                     },
@@ -187,10 +256,38 @@
                         const countryCode = document.getElementById('countryCode').value;
                         reqLoginCode(countryCode + phoneNumber);
                     }
+                    </#if>
+                },
+                mounted: function() {
+                    // Restore previous login username to the correct input field
+                    const savedUsername = '${(login.username!'')?js_string}';
+                    if (savedUsername) {
+                        if (this.usePhone && savedUsername.startsWith('+')) {
+                            // It's a phone number, try to parse it
+                            const phoneInput = document.getElementById('phoneNumberInput');
+                            const countrySelect = document.getElementById('pwdCountryCode');
+                            if (phoneInput && countrySelect) {
+                                // Try to match country code
+                                const options = countrySelect.options;
+                                for (let i = 0; i < options.length; i++) {
+                                    if (savedUsername.startsWith(options[i].value)) {
+                                        countrySelect.value = options[i].value;
+                                        phoneInput.value = savedUsername.substring(options[i].value.length);
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            // It's an email/username
+                            const emailInput = document.getElementById('emailInput');
+                            if (emailInput) {
+                                emailInput.value = savedUsername;
+                            }
+                        }
+                    }
                 }
             });
         </script>
-        </#if>
 
     <#elseif section = "info">
         <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
