@@ -151,7 +151,7 @@
                     '<h3 class="policy-heading">Data Retention and Security</h3>' +
                     '<p class="policy-text">We retain your information only as long as necessary for event purposes and take reasonable measures to safeguard it.</p>' +
                     '<h3 class="policy-heading">Your Rights</h3>' +
-                    '<p class="policy-text">You may request access to, correction of, or deletion of your personal data. Contact us at <a href="mailto:diana@funcity.org" class="policy-link">diana@funcity.org</a> for such requests.</p>'
+                    '<p class="policy-text">You may request access to, correction of, or deletion of your personal data. Contact us at <a href="mailto:dev@funcity.org" class="policy-link">dev@funcity.org</a> for such requests.</p>'
             },
             cookie: {
                 title: 'Cookie Policy',
