@@ -164,6 +164,12 @@ body {
     margin-bottom: 6px;
 }
 
+.required-mark {
+    color: var(--protocols-error);
+    font-weight: 600;
+    margin-left: 2px;
+}
+
 .protocols-input {
     width: 100%;
     padding: 12px 14px;

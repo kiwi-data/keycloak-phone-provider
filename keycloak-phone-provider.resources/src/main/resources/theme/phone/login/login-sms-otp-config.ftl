@@ -24,10 +24,6 @@
                   <div class="protocols-phone-group">
                       <select class="protocols-country-select" id="countryCode">
                           <option value="+86">+86</option>
-                          <option value="+1">+1</option>
-                          <option value="+44">+44</option>
-                          <option value="+81">+81</option>
-                          <option value="+82">+82</option>
                       </select>
                       <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input"
                              name="phoneNumber" type="tel" <#if !phoneNumber??>autofocus</#if>

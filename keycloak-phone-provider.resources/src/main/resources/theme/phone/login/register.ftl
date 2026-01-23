@@ -62,11 +62,12 @@
                 
                 <#if !hideEmail??>
                 <div class="protocols-form-group">
-                    <label for="email" class="protocols-label">${msg("email")}</label>
+                    <label for="email" class="protocols-label">${msg("email")} <span class="required-mark">*</span></label>
                     <input type="email" id="email" class="protocols-input <#if messagesPerField.existsError('email')>has-error</#if>" 
                            name="email" value="${(register.formData.email!'')}" 
                            placeholder="Enter your email"
                            autocomplete="email"
+                           required
                            aria-invalid="<#if messagesPerField.existsError('email')>true</#if>" />
                     <#if messagesPerField.existsError('email')>
                         <span class="protocols-error-msg">
@@ -78,11 +79,12 @@
 
                 <#-- Username Field (Common) -->
                 <div class="protocols-form-group">
-                    <label for="username" class="protocols-label">${msg("username")}</label>
+                    <label for="username" class="protocols-label">${msg("username")} <span class="required-mark">*</span></label>
                     <input type="text" id="username" class="protocols-input <#if messagesPerField.existsError('username')>has-error</#if>" 
                            name="username" value="${(register.formData.username!'')}" 
                            placeholder="Choose a username"
                            autocomplete="username"
+                           required
                            aria-invalid="<#if messagesPerField.existsError('username')>true</#if>" />
                     <#if messagesPerField.existsError('username')>
                         <span class="protocols-error-msg">
@@ -101,19 +103,16 @@
                 <div v-if="phoneRegister" v-cloak>
                 </#if>
                     <div class="protocols-form-group">
-                        <label for="phoneNumber" class="protocols-label">${msg("phoneNumber")}</label>
+                        <label for="phoneNumber" class="protocols-label">${msg("phoneNumber")} <span class="required-mark">*</span></label>
                         <div class="protocols-phone-group">
-                            <select class="protocols-country-select" name="countryCode" id="countryCode">
+                            <select class="protocols-country-select" name="countryCode" id="countryCode" required>
                                 <option value="+86">+86</option>
-                                <option value="+1">+1</option>
-                                <option value="+44">+44</option>
-                                <option value="+81">+81</option>
-                                <option value="+82">+82</option>
                             </select>
                             <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('phoneNumber')>has-error</#if>" 
                                    name="phoneNumber" type="tel" 
                                    value="${(register.formData.phoneNumber!'')}"
-                                   placeholder="Your phone number" />
+                                   placeholder="Your phone number"
+                                   required />
                         </div>
                         <#if messagesPerField.existsError('phoneNumber')>
                             <span class="protocols-error-msg">
@@ -124,12 +123,13 @@
 
                     <#if verifyPhone??>
                     <div class="protocols-form-group">
-                        <label for="code" class="protocols-label">${msg("verificationCode")}</label>
+                        <label for="code" class="protocols-label">${msg("verificationCode")} <span class="required-mark">*</span></label>
                         <div class="protocols-code-group">
                             <input tabindex="0" id="code" class="protocols-input protocols-code-input <#if messagesPerField.existsError('registerCode')>has-error</#if>" 
                                    name="code" type="text" 
                                    placeholder="Your passcode"
-                                   autocomplete="one-time-code" />
+                                   autocomplete="one-time-code"
+                                   required />
                             <button type="button" class="protocols-send-btn"
                                     v-bind:disabled="sendButtonText !== initSendButtonText"
                                     v-on:click="sendVerificationCode()">
@@ -146,11 +146,12 @@
                     
                     <#-- Username for phone registration -->
                     <div class="protocols-form-group">
-                        <label for="username-phone" class="protocols-label">${msg("username")}</label>
+                        <label for="username-phone" class="protocols-label">${msg("username")} <span class="required-mark">*</span></label>
                         <input type="text" id="username-phone" class="protocols-input" 
                                name="username" value="${(register.formData.username!'')}" 
                                placeholder="Choose a username"
-                               autocomplete="username" />
+                               autocomplete="username"
+                               required />
                     </div>
                 <#if !hideEmail??>
                 </div>
@@ -189,11 +190,12 @@
                 <#-- Password Fields (Common) -->
                 <#if passwordRequired??>
                 <div class="protocols-form-group">
-                    <label for="password" class="protocols-label">${msg("password")}</label>
+                    <label for="password" class="protocols-label">${msg("password")} <span class="required-mark">*</span></label>
                     <input type="password" id="password" class="protocols-input <#if messagesPerField.existsError('password')>has-error</#if>" 
                            name="password" 
                            placeholder="Create a password"
                            autocomplete="new-password"
+                           required
                            aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>" />
                     <#if messagesPerField.existsError('password')>
                         <span class="protocols-error-msg">
@@ -203,10 +205,11 @@
                 </div>
 
                 <div class="protocols-form-group">
-                    <label for="password-confirm" class="protocols-label">${msg("passwordConfirm")}</label>
+                    <label for="password-confirm" class="protocols-label">${msg("passwordConfirm")} <span class="required-mark">*</span></label>
                     <input type="password" id="password-confirm" class="protocols-input <#if messagesPerField.existsError('password-confirm')>has-error</#if>" 
                            name="password-confirm"
                            placeholder="Confirm your password"
+                           required
                            aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>" />
                     <#if messagesPerField.existsError('password-confirm')>
                         <span class="protocols-error-msg">
@@ -289,6 +292,21 @@
                                 if (codeField) codeField.value = '';
                             }
                         }
+                    }
+                },
+                mounted: function() {
+                    // Add form submit handler to combine country code and phone number
+                    const form = document.getElementById('kc-register-form');
+                    if (form) {
+                        form.addEventListener('submit', function(e) {
+                            if (app.phoneRegister) {
+                                const countryCode = document.getElementById('countryCode').value;
+                                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                                if (phoneNumber && !phoneNumber.startsWith('+')) {
+                                    document.getElementById('phoneNumber').value = countryCode + phoneNumber;
+                                }
+                            }
+                        });
                     }
                 }
             });

@@ -131,7 +131,7 @@
             },
             privacy: {
                 title: 'Privacy Policy',
-                date: '10/1/2025',
+                date: '1/22/2026',
                 content: '<p class="policy-text">This Privacy Policy describes how we collect, use, and disclose information in connection with your use of this website.</p>' +
                     '<h3 class="policy-heading">Information We Collect</h3>' +
                     '<p class="policy-text">We may collect:</p>' +
