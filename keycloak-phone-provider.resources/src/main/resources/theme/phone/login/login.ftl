@@ -58,11 +58,11 @@
                     <#if !usernameHidden??>
                         <div class="protocols-form-group">
                             <label for="username" class="protocols-label">
-                                ${msg("usernameOrEmailOrPhoneNumber")}
+                                ${msg("emailOrPhoneNumber")}
                             </label>
                             <input tabindex="0" id="username" class="protocols-input <#if messagesPerField.existsError('username','password')>has-error</#if>" 
                                    name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="off"
-                                   placeholder="${msg("usernameOrEmailOrPhoneNumber")}"
+                                   placeholder="${msg("emailOrPhoneNumber")}"
                                    aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>" />
                             <#if messagesPerField.existsError('username','password')>
                                 <span class="protocols-error-msg">

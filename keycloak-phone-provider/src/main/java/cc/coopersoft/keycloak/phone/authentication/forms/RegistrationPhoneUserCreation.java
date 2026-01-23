@@ -219,18 +219,9 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
 
     List<FormMessage> errors = new ArrayList<>();
     
-    // Get username from form - required for both registration modes
+    // Get username from form - may be set by frontend using email/phone
     String username = formData.getFirst(UserModel.USERNAME);
     logger.info("Username from form: " + username);
-    
-    // Validate username is provided
-    if (Validation.isBlank(username)) {
-      logger.warn("Username is blank, validation failed");
-      errors.add(new FormMessage(UserModel.USERNAME, Messages.MISSING_USERNAME));
-      context.error(Errors.INVALID_REGISTRATION);
-      context.validationError(formData, errors);
-      return;
-    }
     
     // Only validate phone number if phone registration is selected
     if (isPhoneReg) {
@@ -263,8 +254,14 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
       }
       
       context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
-      // Use user-provided username (not phone number)
-      logger.info("Using user-provided username: " + username);
+      // If username is blank, use phone number as username
+      if (Validation.isBlank(username)) {
+        username = phoneNumber;
+        formData.putSingle(UserModel.USERNAME, username);
+        logger.info("Username was blank, using phone number as username: " + username);
+      } else {
+        logger.info("Using provided username: " + username);
+      }
       context.getEvent().detail(Details.USERNAME, username);
       // For phone registration, clear email if it's empty to avoid validation errors
       String email = formData.getFirst(UserModel.EMAIL);
@@ -284,8 +281,14 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
         context.validationError(formData, errors);
         return;
       }
-      // Use user-provided username (not email)
-      logger.info("Using user-provided username: " + username);
+      // If username is blank, use email as username
+      if (Validation.isBlank(username)) {
+        username = email;
+        formData.putSingle(UserModel.USERNAME, username);
+        logger.info("Username was blank, using email as username: " + username);
+      } else {
+        logger.info("Using provided username: " + username);
+      }
       context.getEvent().detail(Details.USERNAME, username);
       // Clear phone number field to avoid confusion
       formData.remove(FIELD_PHONE_NUMBER);
@@ -363,10 +366,22 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
         throw new IllegalStateException();
       }
       context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
+      // If username is blank, use phone number as username
+      if (Validation.isBlank(username)) {
+        username = phoneNumber;
+        formData.putSingle(UserModel.USERNAME, username);
+        logger.info("Username was blank, using phone number as username: " + username);
+      }
+    } else {
+      // Email registration - if username is blank, use email as username
+      if (Validation.isBlank(username) && !Validation.isBlank(email)) {
+        username = email;
+        formData.putSingle(UserModel.USERNAME, username);
+        logger.info("Username was blank, using email as username: " + username);
+      }
     }
     
-    // Username is user-provided, not derived from phone/email
-    logger.info("Using user-provided username: " + username);
+    logger.info("Final username: " + username);
 
     context.getEvent().detail(Details.USERNAME, username)
         .detail(Details.REGISTER_METHOD, "form");

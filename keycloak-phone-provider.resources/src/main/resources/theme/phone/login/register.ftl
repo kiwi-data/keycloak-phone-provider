@@ -77,21 +77,13 @@
                 </div>
                 </#if>
 
-                <#-- Username Field (Common) -->
-                <div class="protocols-form-group">
-                    <label for="username" class="protocols-label">${msg("username")} <span class="required-mark">*</span></label>
-                    <input type="text" id="username" class="protocols-input <#if messagesPerField.existsError('username')>has-error</#if>" 
-                           name="username" value="${(register.formData.username!'')}" 
-                           placeholder="Choose a username"
-                           autocomplete="username"
-                           required
-                           aria-invalid="<#if messagesPerField.existsError('username')>true</#if>" />
-                    <#if messagesPerField.existsError('username')>
-                        <span class="protocols-error-msg">
-                            ${kcSanitize(messagesPerField.get('username'))?no_esc}
-                        </span>
-                    </#if>
-                </div>
+                <#-- Hidden Username Field - will be set by JavaScript -->
+                <input type="hidden" id="username" name="username" value="${(register.formData.username!'')}" />
+                <#if messagesPerField.existsError('username')>
+                    <div class="protocols-alert protocols-alert-error">
+                        ${kcSanitize(messagesPerField.get('username'))?no_esc}
+                    </div>
+                </#if>
 
                 <#if phoneNumberRequired?? && !hideEmail??>
                 </div>
@@ -143,16 +135,6 @@
                         </#if>
                     </div>
                     </#if>
-                    
-                    <#-- Username for phone registration -->
-                    <div class="protocols-form-group">
-                        <label for="username-phone" class="protocols-label">${msg("username")} <span class="required-mark">*</span></label>
-                        <input type="text" id="username-phone" class="protocols-input" 
-                               name="username" value="${(register.formData.username!'')}" 
-                               placeholder="Choose a username"
-                               autocomplete="username"
-                               required />
-                    </div>
                 <#if !hideEmail??>
                 </div>
                 </#if>
@@ -295,15 +277,23 @@
                     }
                 },
                 mounted: function() {
-                    // Add form submit handler to combine country code and phone number
+                    // Add form submit handler to set username and combine country code with phone number
                     const form = document.getElementById('kc-register-form');
                     if (form) {
                         form.addEventListener('submit', function(e) {
+                            const usernameField = document.getElementById('username');
                             if (app.phoneRegister) {
+                                // Phone registration: use phone number as username
                                 const countryCode = document.getElementById('countryCode').value;
                                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
-                                if (phoneNumber && !phoneNumber.startsWith('+')) {
-                                    document.getElementById('phoneNumber').value = countryCode + phoneNumber;
+                                const fullPhoneNumber = phoneNumber.startsWith('+') ? phoneNumber : countryCode + phoneNumber;
+                                document.getElementById('phoneNumber').value = fullPhoneNumber;
+                                usernameField.value = fullPhoneNumber;
+                            } else {
+                                // Email registration: use email as username
+                                const emailField = document.getElementById('email');
+                                if (emailField) {
+                                    usernameField.value = emailField.value.trim();
                                 }
                             }
                         });
