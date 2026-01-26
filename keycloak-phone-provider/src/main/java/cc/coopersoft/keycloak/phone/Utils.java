@@ -3,16 +3,14 @@ package cc.coopersoft.keycloak.phone;
 import cc.coopersoft.common.OptionalUtils;
 import cc.coopersoft.keycloak.phone.providers.exception.PhoneNumberInvalidException;
 import cc.coopersoft.keycloak.phone.providers.spi.PhoneProvider;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import jakarta.validation.constraints.NotNull;
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-
-import com.google.i18n.phonenumbers.*;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-
-import jakarta.validation.constraints.NotNull;
-import org.keycloak.utils.StringUtil;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -42,7 +40,8 @@ public class Utils {
             }
         }
 
-        return numbers.stream().flatMap(number -> userProvider
+        // First try to find user by phone attribute
+        Optional<UserModel> userByAttribute = numbers.stream().flatMap(number -> userProvider
                 .searchForUserByUserAttributeStream(realm, "phone", number))
                 .max((u1, u2) -> {
                     var result = comparatorAttributesAnyMatch(u1, u2, "phoneNumberVerified", "true"::equals);
@@ -52,6 +51,19 @@ public class Utils {
                     return result;
                 });
 
+        if (userByAttribute.isPresent()) {
+            return userByAttribute;
+        }
+
+        // If not found by attribute, try to find user by username (phone number as username)
+        for (String number : numbers) {
+            UserModel userByUsername = userProvider.getUserByUsername(realm, number);
+            if (userByUsername != null) {
+                return Optional.of(userByUsername);
+            }
+        }
+
+        return Optional.empty();
     }
 
     // public static Optional<UserModel> findUserByPhone(UserProvider userProvider,

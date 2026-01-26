@@ -135,6 +135,7 @@ public class ResetCredentialWithPhone implements Authenticator, AuthenticatorFac
         invalidVerificationCode(context, phoneNumber);
         return false;
       }
+      
       user = Utils.findUserByPhone(context.getSession(), context.getRealm(), phoneNumber)
           .orElse(null);
 
@@ -211,6 +212,9 @@ public class ResetCredentialWithPhone implements Authenticator, AuthenticatorFac
 
     if (byPhone) {
       context.getAuthenticationSession().setAuthNote(SHOULD_SEND_EMAIL, "false");
+      // Set ACTION_TOKEN_USER_ID to simulate action token verification
+      // This allows the Reset Password step to proceed correctly
+      context.getAuthenticationSession().setAuthNote(DefaultActionTokenKey.ACTION_TOKEN_USER_ID, user.getId());
     }
     context.setUser(user);
     return true;

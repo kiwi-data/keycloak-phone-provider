@@ -18,6 +18,20 @@
         <div id="vue-app">
             <div v-cloak>
                 <form id="kc-reset-password-form" action="${url.loginAction}" method="post">
+                    <script type="text/javascript">
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var form = document.getElementById('kc-reset-password-form');
+                        if (form) {
+                            form.addEventListener('submit', function(e) {
+                                var phoneInput = document.getElementById('phoneNumber');
+                                var countryCode = document.getElementById('countryCode');
+                                if (phoneInput && countryCode && phoneInput.value && !phoneInput.value.startsWith('+')) {
+                                    phoneInput.value = countryCode.value + phoneInput.value.trim();
+                                }
+                            });
+                        }
+                    });
+                    </script>
                     
                     <#if supportPhone??>
                     <div class="protocols-alert protocols-alert-error" v-show="errorMessage">
