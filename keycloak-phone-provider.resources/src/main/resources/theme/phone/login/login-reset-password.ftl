@@ -40,7 +40,7 @@
 
                     <div class="protocols-tabs">
                         <button type="button" class="protocols-tab" :class="{ active: !phoneActivated }" @click="phoneActivated = false">
-                            ${msg("usernameOrEmail")}
+                            ${msg("email")}
                         </button>
                         <button type="button" class="protocols-tab" :class="{ active: phoneActivated }" @click="phoneActivated = true">
                             ${msg("phoneNumber")}
@@ -53,10 +53,10 @@
                     <#-- Email/Username Reset -->
                     <div <#if supportPhone??> v-if="!phoneActivated" </#if>>
                         <div class="protocols-form-group">
-                            <label for="username" class="protocols-label">${msg("usernameOrEmail")}</label>
+                            <label for="username" class="protocols-label">${msg("email")}</label>
                             <input type="text" id="username" name="username" 
                                    class="protocols-input <#if messagesPerField.existsError('username')>has-error</#if>"
-                                   placeholder="Enter your email or username"
+                                   placeholder="Enter your email"
                                    autofocus value="${(auth.attemptedUsername!'')}"
                                    aria-invalid="<#if messagesPerField.existsError('username')>true</#if>" />
                             <#if messagesPerField.existsError('username')>

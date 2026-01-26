@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${msg("passwordResetSubject",realmName)}</title>
+    <title>${msg("passwordResetSubject")} - ${realmName}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f4f4;">
@@ -48,7 +48,7 @@
                                 <a href="${link}" style="color:#dc3545;font-size:14px;">${link}</a>
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#fff8e1;border-radius:4px;color:#856404;font-size:14px;line-height:1.6;">
-                                ⏰ 此链接将在 <strong>${linkExpiration}</strong> 后过期。
+                                ⏰ 此链接将在 <strong>${linkExpiration}</strong> 分钟后过期。
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#f8f9fa;border-radius:4px;color:#666666;font-size:14px;line-height:1.6;">
                                 🔒 如果您没有请求重置密码，请忽略此邮件，您的密码将保持不变。

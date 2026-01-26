@@ -6,7 +6,7 @@
 
 ${link}
 
-此链接将在 ${linkExpiration} 后过期。
+此链接将在 ${linkExpiration} 分钟后过期。
 
 如果您没有请求重置密码，请忽略此邮件，您的密码将保持不变。
 

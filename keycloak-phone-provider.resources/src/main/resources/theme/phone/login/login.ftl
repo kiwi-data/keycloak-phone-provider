@@ -55,11 +55,11 @@
                     <#if !usernameHidden??>
                         <#-- Sub-Tab Switch: Phone / Email for password login -->
                         <div class="protocols-tabs" v-cloak>
-                            <button type="button" class="protocols-tab" :class="{ active: usePhone }" @click="setUsePhone(true)">
-                                ${msg("loginByPhoneNumber")}
-                            </button>
                             <button type="button" class="protocols-tab" :class="{ active: !usePhone }" @click="setUsePhone(false)">
                                 ${msg("loginByEmailAddress")}
+                            </button>
+                            <button type="button" class="protocols-tab" :class="{ active: usePhone }" @click="setUsePhone(true)">
+                                ${msg("loginByPhoneNumber")}
                             </button>
                         </div>
 

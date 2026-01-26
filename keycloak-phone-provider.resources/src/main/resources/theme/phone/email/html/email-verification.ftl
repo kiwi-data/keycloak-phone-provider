@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${msg("emailVerificationSubject",realmName)}</title>
+    <title>${msg("emailVerificationSubject")} - ${realmName}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f4f4;">
@@ -20,7 +20,7 @@
                     <tr>
                         <td style="padding:40px;">
                             <h2 style="margin:0 0 20px;color:#333333;font-size:20px;font-weight:600;">
-                                ${kcSanitize(msg("emailVerificationSubject",realmName))?no_esc}
+                                ${kcSanitize(msg("emailVerificationSubject"))?no_esc} - ${realmName}
                             </h2>
                             <p style="margin:0 0 20px;color:#666666;font-size:16px;line-height:1.6;">
                                 您好，
@@ -48,7 +48,7 @@
                                 <a href="${link}" style="color:#0066cc;font-size:14px;">${link}</a>
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#fff8e1;border-radius:4px;color:#856404;font-size:14px;line-height:1.6;">
-                                ⏰ 此链接将在 <strong>${linkExpiration}</strong> 后过期。
+                                ⏰ 此链接将在 <strong>${linkExpiration}</strong> 分钟后过期。
                             </p>
                             <p style="margin:20px 0 0;color:#999999;font-size:14px;line-height:1.6;">
                                 如果您没有创建此账号，请忽略此邮件。
