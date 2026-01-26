@@ -79,7 +79,7 @@
 
                 <#-- Hidden Username Field - will be set by JavaScript -->
                 <input type="hidden" id="username" name="username" value="${(register.formData.username!'')}" />
-                <#if messagesPerField.existsError('username')>
+                <#if messagesPerField.existsError('username') && !messagesPerField.existsError('email','phoneNumber')>
                     <div class="protocols-alert protocols-alert-error">
                         ${kcSanitize(messagesPerField.get('username'))?no_esc}
                     </div>
