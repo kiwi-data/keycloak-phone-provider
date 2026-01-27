@@ -88,6 +88,47 @@ body {
     height: 32px;
 }
 
+.protocols-locale {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.protocols-locale select {
+    width: 100%;
+    padding: 12px 40px 12px 14px;
+    border: 1px solid var(--protocols-input-border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--protocols-text);
+    background: var(--protocols-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    box-sizing: border-box;
+}
+
+.protocols-locale select:focus {
+    outline: none;
+    border-color: var(--protocols-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.protocols-locale::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--protocols-text-secondary);
+    border-bottom: 2px solid var(--protocols-text-secondary);
+    transform: translateY(-50%) rotate(45deg);
+    pointer-events: none;
+}
+
 .protocols-subtitle {
     color: var(--protocols-text-secondary);
     font-size: 16px;
