@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true displayMessage=!messagesPerField.existsError('username','code','phoneNumber'); section>
     <#if section = "header">
-        Reset your password
+        ${msg("protocolsResetPasswordTitle")}
     <#elseif section = "form">
 
         <#if supportPhone??>
@@ -9,29 +9,15 @@
             <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
             <style>
                 [v-cloak] > * { display: none; }
-                [v-cloak]::before { content: "loading..."; }
+                [v-cloak]::before { content: "${msg("protocolsLoading")?js_string}"; }
             </style>
         </#if>
 
-        <p class="protocols-subtitle">Enter your details to reset your password.</p>
+        <p class="protocols-subtitle">${msg("protocolsResetPasswordSubtitle")}</p>
 
         <div id="vue-app">
             <div v-cloak>
                 <form id="kc-reset-password-form" action="${url.loginAction}" method="post">
-                    <script type="text/javascript">
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var form = document.getElementById('kc-reset-password-form');
-                        if (form) {
-                            form.addEventListener('submit', function(e) {
-                                var phoneInput = document.getElementById('phoneNumber');
-                                var countryCode = document.getElementById('countryCode');
-                                if (phoneInput && countryCode && phoneInput.value && !phoneInput.value.startsWith('+')) {
-                                    phoneInput.value = countryCode.value + phoneInput.value.trim();
-                                }
-                            });
-                        }
-                    });
-                    </script>
                     
                     <#if supportPhone??>
                     <div class="protocols-alert protocols-alert-error" v-show="errorMessage">
@@ -56,7 +42,7 @@
                             <label for="username" class="protocols-label">${msg("email")}</label>
                             <input type="text" id="username" name="username" 
                                    class="protocols-input <#if messagesPerField.existsError('username')>has-error</#if>"
-                                   placeholder="Enter your email"
+                                   placeholder="${msg("protocolsPlaceholderEmail")}"
                                    autofocus value="${(auth.attemptedUsername!'')}"
                                    aria-invalid="<#if messagesPerField.existsError('username')>true</#if>" />
                             <#if messagesPerField.existsError('username')>
@@ -78,7 +64,7 @@
                                 </select>
                                 <input type="text" id="phoneNumber" name="phoneNumber" v-model="phoneNumber"
                                        class="protocols-input protocols-phone-input <#if messagesPerField.existsError('code','phoneNumber')>has-error</#if>"
-                                       placeholder="Your phone number"
+                                       placeholder="${msg("protocolsPlaceholderPhone")}"
                                        aria-invalid="<#if messagesPerField.existsError('code','phoneNumber')>true</#if>" />
                             </div>
                             <#if messagesPerField.existsError('code','phoneNumber')>
@@ -93,7 +79,7 @@
                             <div class="protocols-code-group">
                                 <input type="text" id="code" name="code"
                                        class="protocols-input protocols-code-input"
-                                       placeholder="Your passcode"
+                                       placeholder="${msg("protocolsPlaceholderPasscode")}"
                                        autocomplete="one-time-code"
                                        aria-invalid="<#if messagesPerField.existsError('code','phoneNumber')>true</#if>" />
                                 <button type="button" class="protocols-send-btn"
@@ -119,6 +105,18 @@
 
         <#if supportPhone??>
         <script type="text/javascript">
+            function bindResetPasswordForm() {
+                var form = document.getElementById('kc-reset-password-form');
+                if (!form) return;
+                form.addEventListener('submit', function() {
+                    var phoneInput = document.getElementById('phoneNumber');
+                    var countryCode = document.getElementById('countryCode');
+                    if (phoneInput && countryCode && phoneInput.value && !phoneInput.value.startsWith('+')) {
+                        phoneInput.value = countryCode.value + phoneInput.value.trim();
+                    }
+                });
+            }
+
             function req(phoneNumber) {
                 const params = {params: {phoneNumber}}
                 axios.get(window.location.origin + '/realms/${realm.name}/sms/reset-code', params)
@@ -160,6 +158,9 @@
                         const countryCode = document.getElementById('countryCode').value;
                         req(countryCode + phoneNumber);
                     }
+                },
+                mounted: function() {
+                    bindResetPasswordForm();
                 }
             });
         </script>

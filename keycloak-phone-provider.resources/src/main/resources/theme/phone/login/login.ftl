@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
     <#if section = "header">
-        Hey, let's get started!
+        ${msg("loginAccountTitle")}
     <#elseif section = "socialProviders">
         <#if realm.password && social.providers??>
             <div class="protocols-social-section">
@@ -12,11 +12,11 @@
                         <#elseif p.iconClasses?has_content>
                             <i class="${p.iconClasses!}" aria-hidden="true"></i>
                         </#if>
-                        <span>Continue with ${p.displayName!}</span>
+                        <span>${msg("protocolsContinueWith", p.displayName!)}</span>
                     </a>
                 </#list>
             </div>
-            <div class="protocols-divider"><span>or</span></div>
+            <div class="protocols-divider"><span>${msg("protocolsOr")}</span></div>
         </#if>
     <#elseif section = "form">
         <#-- Always load Vue.js for tab switching -->
@@ -24,10 +24,10 @@
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <style>
             [v-cloak] > * { display: none; }
-            [v-cloak]::before { content: "loading..."; }
+            [v-cloak]::before { content: "${msg("protocolsLoading")?js_string}"; }
         </style>
 
-        <p class="protocols-subtitle">Welcome to Protocols, please log in to continue.</p>
+        <p class="protocols-subtitle">${msg("protocolsLoginSubtitle")}</p>
 
         <div id="vue-app">
             <#if realm.password>
@@ -149,7 +149,7 @@
                             </select>
                             <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input" 
                                    name="phoneNumber" type="tel" 
-                                   placeholder="Your phone number"
+                                   placeholder="${msg("protocolsPlaceholderPhone")}"
                                    v-model="phoneNumber" />
                         </div>
                     </div>
@@ -159,7 +159,7 @@
                         <div class="protocols-code-group">
                             <input tabindex="0" id="code" class="protocols-input protocols-code-input" 
                                    name="code" type="text" 
-                                   placeholder="Your passcode"
+                                   placeholder="${msg("protocolsPlaceholderPasscode")}"
                                    autocomplete="one-time-code" />
                             <button type="button" class="protocols-send-btn"
                                     :disabled="sendButtonText !== initSendButtonText"

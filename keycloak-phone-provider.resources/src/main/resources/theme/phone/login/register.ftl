@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('firstName','lastName','email','username','password','password-confirm','phoneNumber','registerCode'); section>
     <#if section = "header">
-        Create your account
+        ${msg("registerTitle")}
     <#elseif section = "socialProviders">
         <#if realm.password && social.providers??>
             <div class="protocols-social-section">
@@ -12,11 +12,11 @@
                         <#elseif p.iconClasses?has_content>
                             <i class="${p.iconClasses!}" aria-hidden="true"></i>
                         </#if>
-                        <span>Continue with ${p.displayName!}</span>
+                        <span>${msg("protocolsContinueWith", p.displayName!)}</span>
                     </a>
                 </#list>
             </div>
-            <div class="protocols-divider"><span>or</span></div>
+            <div class="protocols-divider"><span>${msg("protocolsOr")}</span></div>
         </#if>
     <#elseif section = "form">
         <#if phoneNumberRequired??>
@@ -24,11 +24,11 @@
             <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
             <style>
                 [v-cloak] > * { display: none; }
-                [v-cloak]::before { content: "loading..."; }
+                [v-cloak]::before { content: "${msg("protocolsLoading")?js_string}"; }
             </style>
         </#if>
         
-        <p class="protocols-subtitle">Welcome to Protocols, create an account to get started.</p>
+        <p class="protocols-subtitle">${msg("protocolsRegisterSubtitle")}</p>
 
         <div id="vue-app">
             <#-- Vue Error Message -->
@@ -65,7 +65,7 @@
                     <label for="email" class="protocols-label">${msg("email")} <span class="required-mark">*</span></label>
                     <input type="email" id="email" class="protocols-input <#if messagesPerField.existsError('email')>has-error</#if>" 
                            name="email" value="${(register.formData.email!'')}" 
-                           placeholder="Enter your email"
+                           placeholder="${msg("protocolsPlaceholderEmail")}"
                            autocomplete="email"
                            required
                            aria-invalid="<#if messagesPerField.existsError('email')>true</#if>" />
@@ -104,7 +104,7 @@
                             <input tabindex="0" id="phoneNumberInput" class="protocols-input protocols-phone-input <#if messagesPerField.existsError('phoneNumber')>has-error</#if>" 
                                    type="tel" 
                                    value="${(register.formData.phoneNumber!'')}"
-                                   placeholder="Your phone number"
+                                   placeholder="${msg("protocolsPlaceholderPhone")}"
                                    required />
                         </div>
                         <#if messagesPerField.existsError('phoneNumber')>
@@ -120,7 +120,7 @@
                         <div class="protocols-code-group">
                             <input tabindex="0" id="code" class="protocols-input protocols-code-input <#if messagesPerField.existsError('registerCode')>has-error</#if>" 
                                    name="code" type="text" 
-                                   placeholder="Your passcode"
+                                   placeholder="${msg("protocolsPlaceholderPasscode")}"
                                    autocomplete="one-time-code"
                                    required />
                             <button type="button" class="protocols-send-btn"
@@ -147,7 +147,7 @@
                     <label for="firstName" class="protocols-label">${msg("firstName")}</label>
                     <input type="text" id="firstName" class="protocols-input <#if messagesPerField.existsError('firstName')>has-error</#if>" 
                            name="firstName" value="${(register.formData.firstName!'')}" 
-                           placeholder="First name"
+                           placeholder="${msg("protocolsPlaceholderFirstName")}"
                            aria-invalid="<#if messagesPerField.existsError('firstName')>true</#if>" />
                     <#if messagesPerField.existsError('firstName')>
                         <span class="protocols-error-msg">
@@ -160,7 +160,7 @@
                     <label for="lastName" class="protocols-label">${msg("lastName")}</label>
                     <input type="text" id="lastName" class="protocols-input <#if messagesPerField.existsError('lastName')>has-error</#if>" 
                            name="lastName" value="${(register.formData.lastName!'')}" 
-                           placeholder="Last name"
+                           placeholder="${msg("protocolsPlaceholderLastName")}"
                            aria-invalid="<#if messagesPerField.existsError('lastName')>true</#if>" />
                     <#if messagesPerField.existsError('lastName')>
                         <span class="protocols-error-msg">
@@ -176,7 +176,7 @@
                     <label for="password" class="protocols-label">${msg("password")} <span class="required-mark">*</span></label>
                     <input type="password" id="password" class="protocols-input <#if messagesPerField.existsError('password')>has-error</#if>" 
                            name="password" 
-                           placeholder="Create a password"
+                           placeholder="${msg("protocolsPlaceholderCreatePassword")}"
                            autocomplete="new-password"
                            required
                            aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>" />
@@ -191,7 +191,7 @@
                     <label for="password-confirm" class="protocols-label">${msg("passwordConfirm")} <span class="required-mark">*</span></label>
                     <input type="password" id="password-confirm" class="protocols-input <#if messagesPerField.existsError('password-confirm')>has-error</#if>" 
                            name="password-confirm"
-                           placeholder="Confirm your password"
+                           placeholder="${msg("protocolsPlaceholderConfirmPassword")}"
                            required
                            aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>" />
                     <#if messagesPerField.existsError('password-confirm')>

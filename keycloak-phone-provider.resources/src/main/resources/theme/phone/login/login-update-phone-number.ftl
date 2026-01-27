@@ -1,14 +1,14 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true; section>
     <#if section = "header">
-        Update phone number
+        ${msg("updatePhoneNumber")}
     <#elseif section = "form">
 
       <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
       <style>
           [v-cloak] > * { display: none; }
-          [v-cloak]::before { content: "loading..."; }
+          [v-cloak]::before { content: "${msg("protocolsLoading")?js_string}"; }
       </style>
 
       <p class="protocols-subtitle">${msg("updatePhoneNumberInfo")}</p>
@@ -28,7 +28,7 @@
                       <input tabindex="0" id="phoneNumber" class="protocols-input protocols-phone-input"
                              name="phoneNumber" type="tel" <#if !phoneNumber??>autofocus</#if>
                              value="${phoneNumber!''}"
-                             placeholder="Your phone number"
+                             placeholder="${msg("protocolsPlaceholderPhone")}"
                              autocomplete="mobile tel"/>
                   </div>
               </div>
@@ -38,7 +38,7 @@
                   <div class="protocols-code-group">
                       <input tabindex="0" id="code" class="protocols-input protocols-code-input" name="code"
                              type="text" <#if phoneNumber??>autofocus</#if>
-                             placeholder="Your passcode"
+                             placeholder="${msg("protocolsPlaceholderPasscode")}"
                              autocomplete="one-time-code"/>
                       <button type="button" class="protocols-send-btn"
                               :disabled="sendButtonText !== initSendButtonText"

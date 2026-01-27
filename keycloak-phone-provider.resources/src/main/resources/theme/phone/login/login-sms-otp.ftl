@@ -1,14 +1,14 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true; section>
     <#if section = "header">
-        Verify your identity
+        ${msg("protocolsVerifyIdentityTitle")}
     <#elseif section = "form">
 
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <style>
             [v-cloak] > * { display: none; }
-            [v-cloak]::before { content: "loading..."; }
+            [v-cloak]::before { content: "${msg("protocolsLoading")?js_string}"; }
         </style>
 
         <p class="protocols-subtitle">${msg("authCodeInfo")}</p>
@@ -22,9 +22,9 @@
                 <div class="protocols-form-group">
                     <label for="code" class="protocols-label">${msg("authenticationCode")}</label>
                     <div class="protocols-code-group">
-                        <input tabindex="0" id="code" class="protocols-input protocols-code-input" name="code"
-                               type="text" autofocus autocomplete="one-time-code"
-                               placeholder="Enter verification code" />
+                    <input tabindex="0" id="code" class="protocols-input protocols-code-input" name="code"
+                           type="text" autofocus autocomplete="one-time-code"
+                           placeholder="${msg("protocolsPlaceholderVerificationCode")}" />
                         <button type="button" class="protocols-send-btn"
                                 :disabled="sendButtonText !== initSendButtonText"
                                 @click="sendVerificationCode()">
