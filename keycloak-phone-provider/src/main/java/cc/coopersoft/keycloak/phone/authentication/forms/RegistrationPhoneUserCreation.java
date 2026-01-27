@@ -401,13 +401,13 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
 
     // UserModel user = context.getSession().users().addUser(context.getRealm(),
     // username);
-    user.setEnabled(true);
-    context.setUser(user);
-
     // if is email registration, add verify email action
     if (!isPhoneReg && !user.isEmailVerified()) {
-      context.getAuthenticationSession().addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
+      user.addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
     }
+
+    user.setEnabled(true);
+    context.setUser(user);
 
     context.getAuthenticationSession().setClientNote(OIDCLoginProtocol.LOGIN_HINT_PARAM, username);
     // AttributeFormDataProcessor.process(formData);
