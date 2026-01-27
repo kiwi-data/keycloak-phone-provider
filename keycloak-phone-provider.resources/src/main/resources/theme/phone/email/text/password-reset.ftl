@@ -1,14 +1,13 @@
-您好，
+${msg("emailGreeting")}
 
-我们收到了重置您 ${realmName} 账号密码的请求。
+${msg("passwordResetIntro", realmName)}
 
-请点击下方链接重置您的密码：
+${msg("passwordResetAction")}
 
 ${link}
 
-此链接将在 ${linkExpiration} 分钟后过期。
+${msg("emailExpiration", linkExpiration, msg("linkExpirationFormatter.timePeriodUnit.minutes"))}
 
-如果您没有请求重置密码，请忽略此邮件，您的密码将保持不变。
+${msg("passwordResetIgnore")}
 
-祝好，
-${realmName} 团队
+${msg("emailSignOff", realmName)}

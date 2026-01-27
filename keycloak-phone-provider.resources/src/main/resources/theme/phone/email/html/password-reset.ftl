@@ -20,38 +20,38 @@
                     <tr>
                         <td style="padding:40px;">
                             <h2 style="margin:0 0 20px;color:#333333;font-size:20px;font-weight:600;">
-                                重置您的密码
+                                ${kcSanitize(msg("passwordResetSubject"))?no_esc}
                             </h2>
                             <p style="margin:0 0 20px;color:#666666;font-size:16px;line-height:1.6;">
-                                您好，
+                                ${msg("emailGreeting")}
                             </p>
                             <p style="margin:0 0 20px;color:#666666;font-size:16px;line-height:1.6;">
-                                我们收到了重置您 <strong>${realmName}</strong> 账号密码的请求。
+                                ${kcSanitize(msg("passwordResetIntro", "<strong>" + realmName + "</strong>"))?no_esc}
                             </p>
                             <p style="margin:0 0 30px;color:#666666;font-size:16px;line-height:1.6;">
-                                请点击下方按钮重置您的密码：
+                                ${msg("passwordResetAction")}
                             </p>
                             <!-- Button -->
                             <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td style="text-align:center;padding:20px 0;">
                                         <a href="${link}" style="display:inline-block;padding:14px 32px;background-color:#dc3545;color:#ffffff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;box-shadow:0 2px 4px rgba(220,53,69,0.3);">
-                                            重置密码
+                                            ${msg("passwordResetButton")}
                                         </a>
                                     </td>
                                 </tr>
                             </table>
                             <p style="margin:30px 0 10px;color:#999999;font-size:14px;line-height:1.6;">
-                                或复制以下链接到浏览器中打开：
+                                ${msg("emailCopyLink")}
                             </p>
                             <p style="margin:0 0 20px;word-break:break-all;">
                                 <a href="${link}" style="color:#dc3545;font-size:14px;">${link}</a>
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#fff8e1;border-radius:4px;color:#856404;font-size:14px;line-height:1.6;">
-                                ⏰ 此链接将在 <strong>${linkExpiration}</strong> 分钟后过期。
+                                ⏰ ${kcSanitize(msg("emailExpiration", "<strong>" + linkExpiration + "</strong>", msg("linkExpirationFormatter.timePeriodUnit.minutes")))?no_esc}
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#f8f9fa;border-radius:4px;color:#666666;font-size:14px;line-height:1.6;">
-                                🔒 如果您没有请求重置密码，请忽略此邮件，您的密码将保持不变。
+                                🔒 ${msg("passwordResetIgnore")}
                             </p>
                         </td>
                     </tr>
@@ -59,10 +59,10 @@
                     <tr>
                         <td style="padding:30px 40px;background-color:#f8f9fa;border-radius:0 0 8px 8px;text-align:center;">
                             <p style="margin:0;color:#999999;font-size:12px;">
-                                此邮件由系统自动发送，请勿直接回复。
+                                ${msg("emailAutoSent")}
                             </p>
                             <p style="margin:10px 0 0;color:#999999;font-size:12px;">
-                                © ${.now?string('yyyy')} ${realmName}. All rights reserved.
+                                © ${.now?string('yyyy')} ${realmName}. ${msg("emailAllRights")}
                             </p>
                         </td>
                     </tr>

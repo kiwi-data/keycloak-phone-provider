@@ -23,35 +23,35 @@
                                 ${kcSanitize(msg("emailVerificationSubject"))?no_esc} - ${realmName}
                             </h2>
                             <p style="margin:0 0 20px;color:#666666;font-size:16px;line-height:1.6;">
-                                您好，
+                                ${msg("emailGreeting")}
                             </p>
                             <p style="margin:0 0 20px;color:#666666;font-size:16px;line-height:1.6;">
-                                欢迎加入 <strong>${realmName}</strong>！您的账号已创建成功。
+                                ${kcSanitize(msg("emailVerificationIntro", "<strong>" + realmName + "</strong>"))?no_esc}
                             </p>
                             <p style="margin:0 0 30px;color:#666666;font-size:16px;line-height:1.6;">
-                                请点击下方按钮验证您的邮箱地址：
+                                ${msg("emailVerificationAction")}
                             </p>
                             <!-- Button -->
                             <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td style="text-align:center;padding:20px 0;">
                                         <a href="${link}" style="display:inline-block;padding:14px 32px;background-color:#0066cc;color:#ffffff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;box-shadow:0 2px 4px rgba(0,102,204,0.3);">
-                                            验证邮箱地址
+                                            ${msg("emailVerificationButton")}
                                         </a>
                                     </td>
                                 </tr>
                             </table>
                             <p style="margin:30px 0 10px;color:#999999;font-size:14px;line-height:1.6;">
-                                或复制以下链接到浏览器中打开：
+                                ${msg("emailCopyLink")}
                             </p>
                             <p style="margin:0 0 20px;word-break:break-all;">
                                 <a href="${link}" style="color:#0066cc;font-size:14px;">${link}</a>
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#fff8e1;border-radius:4px;color:#856404;font-size:14px;line-height:1.6;">
-                                ⏰ 此链接将在 <strong>${linkExpiration}</strong> 分钟后过期。
+                                ⏰ ${kcSanitize(msg("emailExpiration", "<strong>" + linkExpiration + "</strong>", msg("linkExpirationFormatter.timePeriodUnit.minutes")))?no_esc}
                             </p>
                             <p style="margin:20px 0 0;color:#999999;font-size:14px;line-height:1.6;">
-                                如果您没有创建此账号，请忽略此邮件。
+                                ${msg("emailVerificationIgnore")}
                             </p>
                         </td>
                     </tr>
@@ -59,10 +59,10 @@
                     <tr>
                         <td style="padding:30px 40px;background-color:#f8f9fa;border-radius:0 0 8px 8px;text-align:center;">
                             <p style="margin:0;color:#999999;font-size:12px;">
-                                此邮件由系统自动发送，请勿直接回复。
+                                ${msg("emailAutoSent")}
                             </p>
                             <p style="margin:10px 0 0;color:#999999;font-size:12px;">
-                                © ${.now?string('yyyy')} ${realmName}. All rights reserved.
+                                © ${.now?string('yyyy')} ${realmName}. ${msg("emailAllRights")}
                             </p>
                         </td>
                     </tr>

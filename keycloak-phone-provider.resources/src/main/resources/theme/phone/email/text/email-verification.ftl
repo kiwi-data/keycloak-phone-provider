@@ -1,14 +1,13 @@
-您好，
+${msg("emailGreeting")}
 
-欢迎加入 ${realmName}！您的账号已创建成功。
+${msg("emailVerificationIntro", realmName)}
 
-请点击下方链接验证您的邮箱地址：
+${msg("emailVerificationAction")}
 
 ${link}
 
-此链接将在 ${linkExpiration} 分钟后过期。
+${msg("emailExpiration", linkExpiration, msg("linkExpirationFormatter.timePeriodUnit.minutes"))}
 
-如果您没有创建此账号，请忽略此邮件。
+${msg("emailVerificationIgnore")}
 
-祝好，
-${realmName} 团队
+${msg("emailSignOff", realmName)}
