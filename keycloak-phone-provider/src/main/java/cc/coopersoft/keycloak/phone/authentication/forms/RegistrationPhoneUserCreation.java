@@ -195,11 +195,13 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
 
   /**
    * Check if the user selected phone registration mode.
-   * If registerType is not present, default to phone registration for backward compatibility.
+   * If registerType is not present, default to phone registration for backward
+   * compatibility.
    */
   private boolean isPhoneRegistration(MultivaluedMap<String, String> formData) {
     String registerType = formData.getFirst(REGISTER_TYPE_FIELD);
-    // If registerType is not set, default to phone registration (backward compatibility)
+    // If registerType is not set, default to phone registration (backward
+    // compatibility)
     return registerType == null || REGISTER_TYPE_PHONE.equals(registerType);
   }
 
@@ -218,11 +220,11 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
     logger.info("isPhoneRegistration: " + isPhoneReg + ", phoneNumber: " + phoneNumber);
 
     List<FormMessage> errors = new ArrayList<>();
-    
+
     // Get username from form - may be set by frontend using email/phone
     String username = formData.getFirst(UserModel.USERNAME);
     logger.info("Username from form: " + username);
-    
+
     // Only validate phone number if phone registration is selected
     if (isPhoneReg) {
       logger.info("Processing PHONE registration");
@@ -233,7 +235,7 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
         context.validationError(formData, errors);
         return;
       }
-      
+
       try {
         phoneNumber = Utils.canonicalizePhoneNumber(session, phoneNumber);
         logger.info("Canonicalized phone number: " + phoneNumber);
@@ -252,7 +254,7 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
         context.validationError(formData, errors);
         return;
       }
-      
+
       context.getEvent().detail(FIELD_PHONE_NUMBER, phoneNumber);
       // If username is blank, use phone number as username
       if (Validation.isBlank(username)) {
@@ -353,10 +355,11 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
     String phoneNumber = formData.getFirst(FIELD_PHONE_NUMBER);
     String email = formData.getFirst(UserModel.EMAIL);
     String username = formData.getFirst(UserModel.USERNAME);
-    logger.info("isPhoneReg: " + isPhoneReg + ", phoneNumber: " + phoneNumber + ", email: " + email + ", username: " + username);
+    logger.info("isPhoneReg: " + isPhoneReg + ", phoneNumber: " + phoneNumber + ", email: " + email + ", username: "
+        + username);
 
     var session = context.getSession();
-    
+
     // Process phone number for phone registration
     if (isPhoneReg && phoneNumber != null && !phoneNumber.isBlank()) {
       try {
@@ -380,7 +383,7 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
         logger.info("Username was blank, using email as username: " + username);
       }
     }
-    
+
     logger.info("Final username: " + username);
 
     context.getEvent().detail(Details.USERNAME, username)
@@ -400,6 +403,11 @@ public class RegistrationPhoneUserCreation implements FormActionFactory, FormAct
     // username);
     user.setEnabled(true);
     context.setUser(user);
+
+    // if is email registration, add verify email action
+    if (!isPhoneReg && !user.isEmailVerified()) {
+      context.getAuthenticationSession().addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
+    }
 
     context.getAuthenticationSession().setClientNote(OIDCLoginProtocol.LOGIN_HINT_PARAM, username);
     // AttributeFormDataProcessor.process(formData);
