@@ -6,6 +6,8 @@ ${msg("passwordResetAction")}
 
 ${link}
 
+${msg("passwordResetTeam")}
+
 ${msg("emailExpiration", linkExpiration, msg("linkExpirationFormatter.timePeriodUnit.minutes"))}
 
 ${msg("passwordResetIgnore")}

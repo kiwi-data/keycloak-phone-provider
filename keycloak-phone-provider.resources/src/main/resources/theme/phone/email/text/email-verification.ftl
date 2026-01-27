@@ -1,13 +1,17 @@
-${msg("emailGreeting")}
-
-${msg("emailVerificationIntro", realmName)}
+${msg("emailVerificationIntro")}
 
 ${msg("emailVerificationAction")}
 
-${link}
+${msg("emailVerificationButton")}: ${link}
+
+${msg("emailVerificationCopyLink")} ${link}
+
+${msg("emailVerificationSignOff")}
+${msg("emailVerificationTeam")}
 
 ${msg("emailExpiration", linkExpiration, msg("linkExpirationFormatter.timePeriodUnit.minutes"))}
 
 ${msg("emailVerificationIgnore")}
 
-${msg("emailSignOff", realmName)}
+${msg("emailAutoSent")}
+© ${.now?string('yyyy')} ${realmName}. ${msg("emailAllRights")}

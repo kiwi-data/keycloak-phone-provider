@@ -13,6 +13,7 @@
                     <!-- Header -->
                     <tr>
                         <td style="padding:40px 40px 20px;text-align:center;background-color:#dc3545;border-radius:8px 8px 0 0;">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcuODE1NjMgOC4yNTY0NUMzLjgyNjU2IDguMjU2NDUgMi42MDk3NiA0LjA4NTQ4IDIuNSAySDE5LjA1ODRDMjMuMTUxIDIgMzMuNSA1LjgxMDMyIDMzLjUgMTguNDY0M0MzMy41IDI2Ljg4NDcgMjYuMDY3NSAzMy42NTg2IDE0Ljk2NTkgMzMuMTQxMVYyNi44ODQ3QzIzLjQzMzIgMjcuMzA4IDI3LjI0MzYgMjIuNjUxIDI3LjI0MzYgMTcuOTkzOUMyNy4yNDM2IDEzLjMzNjkgMjMuOTk3NyA4LjI1NjQ1IDE3LjQ1OSA4LjI1NjQ1SDcuODE1NjNaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNMi41NDY4OCAyMi45MzI3VjMzLjE4NzdMOC44MDMzMiAzMy4xNDA2QzguNzU2MjggMzAuOTYxMSA4LjgwMzMyIDI2LjA2ODYgOC44MDMzMiAyMy45MjA2QzguODAzMzIgMjEuODk3OCAxMC40OTY4IDIwLjcyMTggMTEuODYxIDIwLjcyMThIMTcuNzg4MUMxOS4wNTgzIDIwLjcyMTggMjAuOTg2OSAxOS45MzE2IDIwLjk4NjkgMTcuODA1M0MyMC45ODY5IDE1LjIwODYgMTguODU0NCAxNC42MjIyIDE3Ljc4ODEgMTQuNjUzNUgxMC44NzMxQzQuMzgxNDcgMTQuNjUzNSAyLjU0Njg4IDIwLjA2MzMgMi41NDY4OCAyMi45MzI3WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="Protocols" width="40" height="40" style="display:block;margin:0 auto 12px;" />
                             <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:600;">${realmName}</h1>
                         </td>
                     </tr>
@@ -46,6 +47,9 @@
                             </p>
                             <p style="margin:0 0 20px;word-break:break-all;">
                                 <a href="${link}" style="color:#dc3545;font-size:14px;">${link}</a>
+                            </p>
+                            <p style="margin:0 0 6px;color:#666666;font-size:16px;line-height:1.6;text-align:left;">
+                                ${msg("passwordResetTeam")}
                             </p>
                             <p style="margin:20px 0 0;padding:20px;background-color:#fff8e1;border-radius:4px;color:#856404;font-size:14px;line-height:1.6;">
                                 ⏰ ${kcSanitize(msg("emailExpiration", "<strong>" + linkExpiration + "</strong>", msg("linkExpirationFormatter.timePeriodUnit.minutes")))?no_esc}
